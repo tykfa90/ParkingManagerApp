@@ -10,7 +10,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.parkingmanagerapp.ui.theme.ParkingManagerAppTheme
+import com.parkingmanagerapp.viewModel.ParkAppViewModel
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -22,7 +24,7 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    Greeting("Android")
+//                    Greeting("Android")
                 }
             }
         }
@@ -30,17 +32,30 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
+fun MainScreen() {
+    Text(text = "Parking Manager App")
+    val parkingViewModel: ParkAppViewModel= viewModel()
 }
 
 @Preview(showBackground = true)
 @Composable
-fun GreetingPreview() {
+fun MainScreenPreview() {
     ParkingManagerAppTheme {
-        Greeting("Android")
+        MainScreen()
     }
 }
+
+//fun Greeting(name: String, modifier: Modifier = Modifier) {
+//    Text(
+//        text = "Hello $name!",
+//        modifier = modifier
+//    )
+//}
+
+//@Preview(showBackground = true)
+//@Composable
+//fun GreetingPreview() {
+//    ParkingManagerAppTheme {
+//        Greeting("Android")
+//    }
+//}
