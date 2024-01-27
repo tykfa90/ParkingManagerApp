@@ -1,4 +1,4 @@
-package com.parkingmanagerapp
+package com.parkingmanagerapp.ComposeScreens
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
