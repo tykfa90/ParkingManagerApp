@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "121333170833",
+    "project_id": "parkingmanagerapp-f96ae",
+    "storage_bucket": "parkingmanagerapp-f96ae.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:121333170833:android:4f77dd4f48276f8ab9f530",
+        "android_client_info": {
+          "package_name": "com.parkingmanagerapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "121333170833-t8ctm823qbas66plahovb3bsi04c032h.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBXvIhu1l8k3epkWQSbklsf48esByrGmoQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "121333170833-t8ctm823qbas66plahovb3bsi04c032h.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

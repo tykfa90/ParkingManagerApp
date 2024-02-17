@@ -8,10 +8,10 @@
             <InsightsFilterSettings>
               <option name="connection">
                 <ConnectionSetting>
-                  <option name="appId" value="PLACEHOLDER" />
-                  <option name="mobileSdkAppId" value="" />
-                  <option name="projectId" value="" />
-                  <option name="projectNumber" value="" />
+                  <option name="appId" value="com.parkingmanagerapp" />
+                  <option name="mobileSdkAppId" value="1:121333170833:android:4f77dd4f48276f8ab9f530" />
+                  <option name="projectId" value="parkingmanagerapp-f96ae" />
+                  <option name="projectNumber" value="121333170833" />
                 </ConnectionSetting>
               </option>
               <option name="signal" value="SIGNAL_UNSPECIFIED" />
