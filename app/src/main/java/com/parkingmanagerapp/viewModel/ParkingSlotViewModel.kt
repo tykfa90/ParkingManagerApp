@@ -18,22 +18,20 @@ class ParkingSlotViewModel(private val repository: ParkingSlotRepository) : View
         loadParkingSlots()
     }
 
-//    class ParkingSlotViewModelFactory(private val repository: ParkingSlotRepository) : ViewModelProvider.Factory {
-//        override fun <T : ViewModel> create(modelClass: Class<T>): T {
-//            if (modelClass.isAssignableFrom(ParkingSlotViewModel::class.java)) {
-//                @Suppress("UNCHECKED_CAST")
-//                return ParkingSlotViewModel(repository) as T
-//            }
-//            throw IllegalArgumentException("Unknown ViewModel class")
-//        }
-//    }
-
     private fun loadParkingSlots() {
         viewModelScope.launch {
-            val slots = repository.getAllParkingSlots()
-            if (slots != null) {
-                _parkingSlots.value = slots
+            _parkingSlots.value = repository.getAllParkingSlots()
+        }
+    }
+
+    class ParkingSlotViewModelFactory(private val repository: ParkingSlotRepository) :
+        ViewModelProvider.Factory {
+        override fun <T : ViewModel> create(modelClass: Class<T>): T {
+            if (modelClass.isAssignableFrom(ParkingSlotViewModel::class.java)) {
+                @Suppress("UNCHECKED_CAST")
+                return ParkingSlotViewModel(repository) as T
             }
+            throw IllegalArgumentException("Unknown ViewModel class")
         }
     }
 }

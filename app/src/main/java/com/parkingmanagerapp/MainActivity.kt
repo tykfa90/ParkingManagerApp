@@ -28,7 +28,9 @@ class MainActivity : ComponentActivity() {
                         .padding(16.dp),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    MainScreen()
+//                    MainScreen()
+
+                    ParkingSlotScreen(ParkingSlotViewModel(ParkingSlotRepository()))
                 }
             }
 
