@@ -27,16 +27,16 @@ class ParkingSlotRepository {
             .await()
             .documents
             .mapNotNull { document ->
-                document.toObject(ParkingSlot::class.java)
-            }
+                // Manually extracting each field to avoid automatic Firebase object mapping mistakes
+                val slotLabel = document.getString("slotLabel") ?: ""
+                val isOccupied = document.getBoolean("isOccupied") ?: false
 
-        // Optional: Log each parking slot info here if necessary.
-        parkingSlots.forEach { parkingSlot ->
-            Log.d(
-                "ParkingSlotInfo",
-                "Label: ${parkingSlot.slotLabel}, Occupied: ${parkingSlot.isOccupied}"
-            )
-        }
+                // Constructing the ParkingSlot object with extracted values
+                ParkingSlot(
+                    slotLabel = slotLabel,
+                    isOccupied = isOccupied
+                )
+            }
 
         parkingSlots
     } catch (e: Exception) {
