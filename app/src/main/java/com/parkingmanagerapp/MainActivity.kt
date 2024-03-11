@@ -22,12 +22,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             ParkingManagerAppTheme {
-                Surface(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(16.dp),
-                    color = MaterialTheme.colorScheme.background
-                ) {
+                Surface {
 //                    MainScreen()
 
                     ParkingSlotScreen(ParkingSlotViewModel(ParkingSlotRepository()))

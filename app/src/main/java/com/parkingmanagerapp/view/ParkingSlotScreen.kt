@@ -32,9 +32,6 @@ fun ParkingSlotScreen(viewModel: ParkingSlotViewModel) {
 
     val parkingSlots by viewModel.parkingSlots.collectAsState()
 
-    //Test print-out to check db connection temporarily.
-    Log.d("ParkingSlotViewModel", "Fetched slots: $parkingSlots")
-
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
