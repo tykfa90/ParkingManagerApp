@@ -3,88 +3,46 @@ package com.parkingmanagerapp
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
-import com.parkingmanagerapp.repository.ParkingSlotRepository
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import com.parkingmanagerapp.ui.theme.ParkingManagerAppTheme
+import com.parkingmanagerapp.utility.Screen
+import com.parkingmanagerapp.view.MainMenuScreen
 import com.parkingmanagerapp.view.ParkingSlotScreen
-import com.parkingmanagerapp.viewModel.ParkingSlotViewModel
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
             ParkingManagerAppTheme {
-                Surface {
-//                    MainScreen()
-
-                    ParkingSlotScreen(ParkingSlotViewModel(ParkingSlotRepository()))
+                Surface(
+                    modifier = Modifier.fillMaxSize(),
+                    color = MaterialTheme.colorScheme.background
+                ) {
+                    AppNavigation()
                 }
             }
-
-
         }
     }
 }
 
 @Composable
-fun MainScreen() {
-    Text(
-        text = "I'm the main activity screen!",
-        modifier = Modifier.padding(16.dp)
-    )
-
-    ParkingSlotScreen(ParkingSlotViewModel(ParkingSlotRepository()))
-}
-
-@Preview(showBackground = true)
-@Composable
-fun MainScreenPreview() {
-    ParkingManagerAppTheme {
-        MainScreen()
+fun AppNavigation() {
+    val navController = rememberNavController()
+    NavHost(navController = navController, startDestination = Screen.MainMenu.route) {
+        composable(Screen.MainMenu.route) {
+            MainMenuScreen(navController)
+        }
+        composable(Screen.ParkingSlots.route) {
+            ParkingSlotScreen()
+        }
     }
 }
-
-//class MainActivity : ComponentActivity() {
-//    @SuppressLint("CoroutineCreationDuringComposition")
-//    override fun onCreate(savedInstanceState: Bundle?) {
-//        super.onCreate(savedInstanceState)
-//
-//        setContent {
-//            MaterialTheme {
-//                // Loading text to display while application loads contents.
-//                var text by remember { mutableStateOf("Loading...") }
-//
-//                // Attempt to fetch data from Firestore
-//                lifecycleScope.launch {
-//                    val db = FirebaseFirestore.getInstance()
-//                    try {
-//                        val document =
-//                            db.collection("parkingSlots").document("Jx7Ghsq2m9r5UEWRZPpt").get()
-//                                .await()
-//                        text = if (document.exists()) {
-//                            "Document data: ${document.data}"
-//                        } else {
-//                            "No such document"
-//                        }
-//                    } catch (e: Exception) {
-//                        text = "Error fetching document: ${e.message}"
-//                    }
-//                }
-//
-//                // Display the fetched data or status
-//                YourContent(text)
-//            }
-//        }
-//    }
-//}
-//
-//@Composable
-//fun YourContent(text: String) {
-//    Text(text = text)
-//}
