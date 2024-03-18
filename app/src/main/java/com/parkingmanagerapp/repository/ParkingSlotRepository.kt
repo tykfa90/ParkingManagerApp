@@ -4,30 +4,19 @@ import android.util.Log
 import com.google.firebase.firestore.FirebaseFirestore
 import com.parkingmanagerapp.model.ParkingSlot
 import com.parkingmanagerapp.model.Reservation
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
-import kotlin.coroutines.CoroutineContext
 
-class ParkingSlotRepository @Inject constructor() {
+class ParkingSlotRepository @Inject constructor(private val db: FirebaseFirestore) {
 
-    private val db = FirebaseFirestore.getInstance()
     private val parkingSlotCollection = db.collection("parkingSlots")
 
-    fun addParkingSlot(
-        coroutineContext: CoroutineContext,
-        parkingSlot: ParkingSlot,
-        onSuccess: () -> Unit,
-        onFailure: (String) -> Unit
-    ) {
-        CoroutineScope(coroutineContext).launch {
-            try {
-                parkingSlotCollection.add(parkingSlot).await()
-                onSuccess()
-            } catch (e: Exception) {
-                onFailure(e.message ?: "Error adding parking slot")
-            }
+    suspend fun addParkingSlot(parkingSlot: ParkingSlot): Result<Unit> {
+        return try {
+            parkingSlotCollection.add(parkingSlot).await()
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
         }
     }
 
