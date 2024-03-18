@@ -6,9 +6,12 @@ import com.parkingmanagerapp.model.ParkingSlot
 import com.parkingmanagerapp.model.Reservation
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
+import kotlin.coroutines.CoroutineContext
 
-class ParkingSlotRepository @Inject constructor(private val db: FirebaseFirestore) {
-
+class ParkingSlotRepository @Inject constructor(
+    private val db: FirebaseFirestore,
+    private val coroutineContext: CoroutineContext
+) {
     private val parkingSlotCollection = db.collection("parkingSlots")
 
     suspend fun addParkingSlot(parkingSlot: ParkingSlot): Result<Unit> {
