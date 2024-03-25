@@ -1,10 +1,9 @@
 plugins {
     id("com.android.application")
     id("kotlin-android")
-    id("kotlin-kapt")
     id("com.google.gms.google-services")
     id("dagger.hilt.android.plugin")
-    kotlin("kapt")
+    id("com.google.devtools.ksp")
 }
 
 
@@ -25,17 +24,17 @@ android {
             isMinifyEnabled = false
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
-        create("development") {
-            initWith(getByName("debug"))
-            // Customize your 'development' build type
-            isMinifyEnabled = false
+        create("dev") {
+            initWith(getByName("dev"))
+            isMinifyEnabled = true
+            isShrinkResources = true
             isDebuggable = true
-            // Add any other custom configurations for 'development' build type
         }
-        getByName("development") {
-            isMinifyEnabled = false
+        getByName("dev") {
+            isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
-            applicationIdSuffix = ".development"
+            signingConfig = signingConfigs.getByName("debug")
         }
     }
     compileOptions {
@@ -71,7 +70,7 @@ dependencies {
     implementation("com.google.firebase:firebase-firestore-ktx")
     implementation("com.google.dagger:hilt-android:2.51")
     testImplementation("org.junit.jupiter:junit-jupiter:5.8.1")
-    kapt("com.google.dagger:hilt-android-compiler:2.51")
+    ksp("com.google.dagger:hilt-android-compiler:2.51")
     implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
     implementation("org.jetbrains.kotlin:kotlin-stdlib:1.9.23")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.0")
