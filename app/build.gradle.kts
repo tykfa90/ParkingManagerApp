@@ -7,6 +7,7 @@ plugins {
     kotlin("kapt")
 }
 
+
 android {
     namespace = "com.parkingmanagerapp"
     compileSdk = 34
@@ -17,20 +18,24 @@ android {
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
-
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        vectorDrawables {
-            useSupportLibrary = true
-        }
     }
 
     buildTypes {
-        release {
+        getByName("release") {
             isMinifyEnabled = false
-            proguardFiles(
-                getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
-            )
+            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+        }
+        create("development") {
+            initWith(getByName("debug"))
+            // Customize your 'development' build type
+            isMinifyEnabled = false
+            isDebuggable = true
+            // Add any other custom configurations for 'development' build type
+        }
+        getByName("development") {
+            isMinifyEnabled = false
+            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+            applicationIdSuffix = ".development"
         }
     }
     compileOptions {
@@ -45,12 +50,6 @@ android {
     }
     composeOptions {
         kotlinCompilerExtensionVersion = "1.5.11"
-    }
-    packaging {
-        resources {
-            excludes += "/META-INF/{AL2.0,LGPL2.1}"
-            excludes += "/META-INF/gradle/incremental.annotation.processors"
-        }
     }
 }
 
