@@ -18,6 +18,7 @@ import com.parkingmanagerapp.model.ParkingSlot
 import com.parkingmanagerapp.ui.theme.ListScreenLayout
 import com.parkingmanagerapp.viewModel.ParkingSlotViewModel
 
+// Produces a list of available parking slots drawn from the database
 @Composable
 fun ParkingSlotScreen(viewModel: ParkingSlotViewModel = hiltViewModel()) {
     val parkingSlots by viewModel.parkingSlots.collectAsState()
@@ -31,6 +32,7 @@ fun ParkingSlotScreen(viewModel: ParkingSlotViewModel = hiltViewModel()) {
     )
 }
 
+// Function creating list items for the ParkingSlotScreen list
 @Composable
 fun ParkingSlotItem(parkingSlot: ParkingSlot) {
     Card(
