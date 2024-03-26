@@ -1,12 +1,11 @@
 package com.parkingmanagerapp.view
 
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -16,32 +15,20 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.parkingmanagerapp.model.ParkingSlot
+import com.parkingmanagerapp.ui.theme.ListScreenLayout
 import com.parkingmanagerapp.viewModel.ParkingSlotViewModel
 
 @Composable
 fun ParkingSlotScreen(viewModel: ParkingSlotViewModel = hiltViewModel()) {
     val parkingSlots by viewModel.parkingSlots.collectAsState()
 
-    Surface(
-        modifier = Modifier.fillMaxSize(),
-        color = MaterialTheme.colorScheme.background
-    ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Text(
-                text = "Parking Slot Screen - Active!",
-                style = MaterialTheme.typography.titleLarge,
-                color = MaterialTheme.colorScheme.onBackground
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            LazyColumn {
-                items(parkingSlots) { parkingSlot ->
-                    ParkingSlotItem(parkingSlot = parkingSlot)
-                }
-            }
+    // Using ListScreenLayout for consistent styling
+    ListScreenLayout(
+        listItems = parkingSlots,
+        itemContent = { parkingSlot ->
+            ParkingSlotItem(parkingSlot)
         }
-    }
+    )
 }
 
 @Composable
