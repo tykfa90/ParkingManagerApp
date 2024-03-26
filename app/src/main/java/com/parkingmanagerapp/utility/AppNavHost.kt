@@ -6,6 +6,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.parkingmanagerapp.view.MainMenuScreen
 import com.parkingmanagerapp.view.ParkingSlotScreen
+import com.parkingmanagerapp.view.RegisterScreen
 import com.parkingmanagerapp.view.SignInScreen
 import com.parkingmanagerapp.view.TestMenuScreen
 
@@ -17,6 +18,7 @@ fun AppNavHost() {
         composable(Screen.Home.route) { MainMenuScreen(navController) }
         composable(Screen.ParkingSlots.route) { ParkingSlotScreen() }
         composable(Screen.TestMenu.route) { TestMenuScreen(navController) }
-        composable(Screen.SignIn.route) { SignInScreen(navController)}
+        composable(Screen.SignIn.route) { SignInScreen(navController) }
+        composable(Screen.Register.route) { RegisterScreen(navController) }
     }
 }
