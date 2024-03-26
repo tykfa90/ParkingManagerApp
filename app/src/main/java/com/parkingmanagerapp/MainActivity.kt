@@ -15,6 +15,7 @@ import com.parkingmanagerapp.ui.theme.ParkingManagerAppTheme
 import com.parkingmanagerapp.utility.Screen
 import com.parkingmanagerapp.view.MainMenuScreen
 import com.parkingmanagerapp.view.ParkingSlotScreen
+import com.parkingmanagerapp.view.TestMenuScreen
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -23,14 +24,19 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             ParkingManagerAppTheme {
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.background
-                ) {
-                    AppNavigation()
-                }
+                AppSurface()
             }
         }
+    }
+}
+
+@Composable
+fun AppSurface() {
+    Surface(
+        modifier = Modifier.fillMaxSize(),
+        color = MaterialTheme.colorScheme.background
+    ) {
+        AppNavigation()
     }
 }
 
@@ -38,11 +44,8 @@ class MainActivity : ComponentActivity() {
 fun AppNavigation() {
     val navController = rememberNavController()
     NavHost(navController = navController, startDestination = Screen.MainMenu.route) {
-        composable(Screen.MainMenu.route) {
-            MainMenuScreen(navController)
-        }
-        composable(Screen.ParkingSlots.route) {
-            ParkingSlotScreen()
-        }
+        composable(Screen.MainMenu.route) { MainMenuScreen(navController) }
+        composable(Screen.ParkingSlots.route) { ParkingSlotScreen() }
+        composable(Screen.TestMenu.route) { TestMenuScreen(navController) }
     }
 }
