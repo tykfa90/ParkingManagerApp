@@ -13,8 +13,8 @@ import com.parkingmanagerapp.view.TestMenuScreen
 @Composable
 fun AppNavHost() {
     val navController = rememberNavController()
-    NavHost(navController = navController, startDestination = Screen.MainMenu.route) {
-        composable(Screen.MainMenu.route) { MainMenuScreen(navController) }
+    NavHost(navController = navController, startDestination = Screen.Home.route) {
+        composable(Screen.Home.route) { MainMenuScreen(navController) }
         composable(Screen.ParkingSlots.route) { ParkingSlotScreen() }
         composable(Screen.TestMenu.route) { TestMenuScreen(navController) }
         composable(Screen.SignIn.route) { SignInScreen(navController)}
