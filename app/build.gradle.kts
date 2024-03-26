@@ -74,6 +74,8 @@ dependencies {
     implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
     implementation("org.jetbrains.kotlin:kotlin-stdlib:1.9.23")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.0")
+    implementation("androidx.compose.material:material-icons-core:1.6.4")
+    implementation("androidx.compose.material:material-icons-extended:1.6.4")
 
 
     testImplementation("io.mockk:mockk:1.12.0")
