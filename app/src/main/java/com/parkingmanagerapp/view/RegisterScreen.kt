@@ -48,7 +48,8 @@ fun RegisterScreen(navController: NavController, viewModel: AuthViewModel = hilt
     LaunchedEffect(snackbarMessage) {
         snackbarMessage?.let {
             snackbarHostState.showSnackbar(it)
-            viewModel.clearSnackbarMessage() // Make sure to implement this method in your ViewModel
+            viewModel.clearSnackbarMessage()
+            snackbarHostState.currentSnackbarData?.dismiss()
         }
     }
 

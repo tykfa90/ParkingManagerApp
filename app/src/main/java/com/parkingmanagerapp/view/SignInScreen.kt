@@ -32,6 +32,7 @@ import androidx.navigation.NavController
 import com.parkingmanagerapp.ui.theme.StandardScreenLayout
 import com.parkingmanagerapp.utility.Screen
 import com.parkingmanagerapp.viewModel.AuthViewModel
+import kotlinx.coroutines.delay
 
 @Composable
 fun SignInScreen(navController: NavController, viewModel: AuthViewModel = hiltViewModel()) {
@@ -41,21 +42,6 @@ fun SignInScreen(navController: NavController, viewModel: AuthViewModel = hiltVi
     val snackbarHostState = remember { SnackbarHostState() }
     val signInStatus by viewModel.signInStatus.collectAsState(initial = null)
     val snackbarMessage by viewModel.snackbarMessage.collectAsState(initial = null)
-
-    LaunchedEffect(snackbarMessage) {
-        snackbarMessage?.let {
-            snackbarHostState.showSnackbar(it)
-            viewModel.clearSnackbarMessage()
-        }
-    }
-
-    LaunchedEffect(signInStatus) {
-        if (signInStatus == true) {
-            navController.navigate(Screen.Home.route) {
-                popUpTo("sign_in") { inclusive = true }
-            }
-        }
-    }
 
     StandardScreenLayout(
         title = "Sign In",
@@ -69,7 +55,7 @@ fun SignInScreen(navController: NavController, viewModel: AuthViewModel = hiltVi
         ) {
             TextField(
                 value = email,
-                onValueChange = { email = it }, // Now updates properly
+                onValueChange = { email = it },
                 label = { Text("Email") },
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth()
@@ -105,6 +91,26 @@ fun SignInScreen(navController: NavController, viewModel: AuthViewModel = hiltVi
 
             TextButton(onClick = { navController.navigate(Screen.Register.route) }) {
                 Text("Don't have an account? Register")
+            }
+        }
+    }
+
+    LaunchedEffect(snackbarMessage) {
+        snackbarMessage?.let {
+            snackbarHostState.showSnackbar(it)
+            viewModel.clearSnackbarMessage()
+            delay(3000) // Adjust the duration as needed
+            snackbarHostState.currentSnackbarData?.dismiss()
+        }
+    }
+
+    LaunchedEffect(signInStatus) {
+        if (signInStatus == true) {
+            viewModel.setSnackbarMessage("Sign-in successful")
+            delay(3000) // Adjust the duration as needed
+            viewModel.clearSnackbarMessage()
+            navController.navigate(Screen.Home.route) {
+                popUpTo("sign_in") { inclusive = true }
             }
         }
     }

@@ -9,13 +9,15 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.parkingmanagerapp.ui.theme.ParkingManagerAppTheme
 import com.parkingmanagerapp.ui.theme.StandardScreenLayout
 import com.parkingmanagerapp.utility.Screen
+import com.parkingmanagerapp.viewModel.AuthViewModel
 
 @Composable
-fun TestMenuScreen(navController: NavController) {
+fun TestMenuScreen(navController: NavController, viewModel: AuthViewModel = hiltViewModel()) {
     ParkingManagerAppTheme {
         StandardScreenLayout(title = "Test Menu") {
             Column(modifier = Modifier.fillMaxWidth()) {
@@ -28,7 +30,19 @@ fun TestMenuScreen(navController: NavController) {
 
                 Spacer(modifier = Modifier.height(8.dp))
 
-                // Place to add additional screens for testing purposes
+                Button(
+                    onClick = {
+                        viewModel.signOut()
+                        navController.navigate(Screen.SignIn.route) {
+                            popUpTo(0)
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("Sign Out")
+                }
+
+                // Add additional buttons/screens for testing purposes as needed
             }
         }
     }
