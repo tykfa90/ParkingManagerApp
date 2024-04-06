@@ -16,20 +16,23 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.parkingmanagerapp.model.ParkingSlot
 import com.parkingmanagerapp.ui.theme.ListScreenLayout
+import com.parkingmanagerapp.ui.theme.StandardScreenLayout
 import com.parkingmanagerapp.viewModel.ParkingSlotViewModel
 
 // Produces a list of available parking slots drawn from the database
 @Composable
 fun ParkingSlotScreen(viewModel: ParkingSlotViewModel = hiltViewModel()) {
     val parkingSlots by viewModel.parkingSlots.collectAsState()
+    StandardScreenLayout(title = "Parking Slots") {
 
-    // Using ListScreenLayout for consistent styling
-    ListScreenLayout(
-        listItems = parkingSlots,
-        itemContent = { parkingSlot ->
-            ParkingSlotItem(parkingSlot)
-        }
-    )
+        // Using ListScreenLayout for consistent styling
+        ListScreenLayout(
+            listItems = parkingSlots,
+            itemContent = { parkingSlot ->
+                ParkingSlotItem(parkingSlot)
+            }
+        )
+    }
 }
 
 // Function creating list items for the ParkingSlotScreen list

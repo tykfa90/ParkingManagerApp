@@ -3,19 +3,16 @@ package com.parkingmanagerapp
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Modifier
+import androidx.compose.runtime.remember
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.parkingmanagerapp.ui.theme.ParkingManagerAppTheme
-import com.parkingmanagerapp.utility.AppNavHost
+import com.parkingmanagerapp.utility.AppSurface
 import com.parkingmanagerapp.utility.Screen
 import com.parkingmanagerapp.viewModel.AuthViewModel
 import dagger.hilt.android.AndroidEntryPoint
@@ -37,6 +34,7 @@ fun MainContent() {
     val navController = rememberNavController()
     val authViewModel: AuthViewModel = hiltViewModel()
     val isUserAuthenticated by authViewModel.isUserAuthenticated.collectAsState(initial = null)
+    val snackbarHostState = remember { SnackbarHostState() }
 
     LaunchedEffect(isUserAuthenticated) {
         when (isUserAuthenticated) {
@@ -64,15 +62,5 @@ fun MainContent() {
         }
     }
 
-    AppSurface(navController = navController)
-}
-
-@Composable
-fun AppSurface(navController: NavHostController) {
-    Surface(
-        modifier = Modifier.fillMaxSize(),
-        color = MaterialTheme.colorScheme.background
-    ) {
-        AppNavHost(navController = navController)
-    }
+    AppSurface(navController = navController, snackbarHostState = snackbarHostState)
 }

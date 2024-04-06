@@ -35,25 +35,32 @@ import com.parkingmanagerapp.utility.Screen
 import com.parkingmanagerapp.viewModel.AuthViewModel
 
 @Composable
-fun RegisterScreen(navController: NavController, viewModel: AuthViewModel = hiltViewModel()) {
+fun RegisterScreen(navController: NavController, viewModel: AuthViewModel = hiltViewModel(), snackbarHostState: SnackbarHostState) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
     var confirmPasswordVisible by remember { mutableStateOf(false) }
     val signInStatus by viewModel.signInStatus.collectAsState()
-    val snackbarHostState = remember { SnackbarHostState() }
     val snackbarMessage by viewModel.snackbarMessage.collectAsState()
 
     LaunchedEffect(snackbarMessage) {
         snackbarMessage?.let {
             snackbarHostState.showSnackbar(it)
             viewModel.clearSnackbarMessage()
-            snackbarHostState.currentSnackbarData?.dismiss()
         }
     }
 
-    StandardScreenLayout(title = "Register") {
+    // Navigate based on signInStatus
+    LaunchedEffect(signInStatus) {
+        if (signInStatus == true) {
+            navController.navigate(Screen.Home.route) {
+                popUpTo("register") { inclusive = true }
+            }
+        }
+    }
+
+    StandardScreenLayout(title = "Register", snackbarHostState = snackbarHostState) {
         Column(
             modifier = Modifier
                 .padding(horizontal = 16.dp)
@@ -121,6 +128,8 @@ fun RegisterScreen(navController: NavController, viewModel: AuthViewModel = hilt
                     if (password == confirmPassword) {
                         viewModel.register(email, password)
                     } else {
+                        // This now relies on the centralized SnackbarHostState,
+                        // so the message will be shown via the shared mechanism.
                         viewModel.setSnackbarMessage("Passwords do not match")
                     }
                 },
@@ -131,7 +140,8 @@ fun RegisterScreen(navController: NavController, viewModel: AuthViewModel = hilt
 
             // Feedback based on signInStatus
             when (signInStatus) {
-                true -> { /* Handle successful registration */
+                true -> {
+                    viewModel.setSnackbarMessage("Registered successfully!")
                 }
 
                 false -> {
@@ -143,15 +153,6 @@ fun RegisterScreen(navController: NavController, viewModel: AuthViewModel = hilt
                 }
 
                 null -> {}
-            }
-        }
-    }
-
-    // Navigate based on signInStatus
-    LaunchedEffect(signInStatus) {
-        if (signInStatus == true) {
-            navController.navigate(Screen.Home.route) {
-                popUpTo("register") { inclusive = true }
             }
         }
     }
