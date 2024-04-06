@@ -17,16 +17,16 @@ import com.parkingmanagerapp.viewModel.AuthViewModel
 @Composable
 fun AppNavHost(navController: NavHostController, snackbarHostState: SnackbarHostState) {
     NavHost(navController = navController, startDestination = Screen.SplashScreen.route) {
-        composable(Screen.Home.route) { MainMenuScreen(navController) }
-        composable(Screen.ParkingSlots.route) { ParkingSlotScreen() }
-        composable(Screen.TestMenu.route) { TestMenuScreen(navController) }
-        composable(Screen.SignIn.route) { SignInScreen(navController) }
-        composable(Screen.Register.route) { RegisterScreen(navController, snackbarHostState = snackbarHostState) }
         composable(Screen.SplashScreen.route) {
             SplashScreen(
                 navController,
                 authViewModel = AuthViewModel()
             )
         }
+        composable(Screen.SignIn.route) { SignInScreen(navController, snackbarHostState = snackbarHostState) }
+        composable(Screen.Register.route) { RegisterScreen(navController, snackbarHostState = snackbarHostState) }
+        composable(Screen.Home.route) { MainMenuScreen(navController, snackbarHostState = snackbarHostState) }
+        composable(Screen.ParkingSlots.route) { ParkingSlotScreen() }
+        composable(Screen.TestMenu.route) { TestMenuScreen(navController, snackbarHostState = snackbarHostState) }
     }
 }

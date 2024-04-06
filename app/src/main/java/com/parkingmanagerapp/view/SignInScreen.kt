@@ -22,8 +22,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
@@ -32,26 +32,45 @@ import androidx.navigation.NavController
 import com.parkingmanagerapp.ui.theme.StandardScreenLayout
 import com.parkingmanagerapp.utility.Screen
 import com.parkingmanagerapp.viewModel.AuthViewModel
-import kotlinx.coroutines.delay
 
 @Composable
-fun SignInScreen(navController: NavController, viewModel: AuthViewModel = hiltViewModel()) {
+fun SignInScreen(
+    navController: NavController,
+    viewModel: AuthViewModel = hiltViewModel(),
+    snackbarHostState: SnackbarHostState
+) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
-    val snackbarHostState = remember { SnackbarHostState() }
     val signInStatus by viewModel.signInStatus.collectAsState(initial = null)
     val snackbarMessage by viewModel.snackbarMessage.collectAsState(initial = null)
 
+    // React to snackbarMessage updates
+    LaunchedEffect(snackbarMessage) {
+        snackbarMessage?.let {
+            snackbarHostState.showSnackbar(message = it)
+            viewModel.clearSnackbarMessage() // Clear message after showing
+        }
+    }
+
+    // Navigate upon sign-in status change
+    LaunchedEffect(signInStatus) {
+        if (signInStatus == true) {
+            navController.navigate(Screen.Home.route) {
+                popUpTo("sign_in") { inclusive = true }
+            }
+        }
+    }
+
     StandardScreenLayout(
         title = "Sign In",
-        snackbarHostState = snackbarHostState
-    ) { paddingValues ->
+        snackbarHostState = snackbarHostState // Pass it here to the StandardScreenLayout
+    ) {
         Column(
             modifier = Modifier
-                .padding(paddingValues)
-                .padding(horizontal = 16.dp)
-                .fillMaxWidth()
+                .padding(16.dp) // Apply consistent padding
+                .fillMaxWidth(),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
             TextField(
                 value = email,
@@ -70,9 +89,11 @@ fun SignInScreen(navController: NavController, viewModel: AuthViewModel = hiltVi
                 singleLine = true,
                 visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                 trailingIcon = {
-                    val icon: ImageVector = if (passwordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff
                     IconButton(onClick = { passwordVisible = !passwordVisible }) {
-                        Icon(imageVector = icon, contentDescription = if (passwordVisible) "Hide password" else "Show password")
+                        Icon(
+                            imageVector = if (passwordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff,
+                            contentDescription = "Toggle password visibility"
+                        )
                     }
                 },
                 modifier = Modifier.fillMaxWidth()
@@ -91,26 +112,6 @@ fun SignInScreen(navController: NavController, viewModel: AuthViewModel = hiltVi
 
             TextButton(onClick = { navController.navigate(Screen.Register.route) }) {
                 Text("Don't have an account? Register")
-            }
-        }
-    }
-
-    LaunchedEffect(snackbarMessage) {
-        snackbarMessage?.let {
-            snackbarHostState.showSnackbar(it)
-            viewModel.clearSnackbarMessage()
-            delay(3000) // Adjust the duration as needed
-            snackbarHostState.currentSnackbarData?.dismiss()
-        }
-    }
-
-    LaunchedEffect(signInStatus) {
-        if (signInStatus == true) {
-            viewModel.setSnackbarMessage("Sign-in successful")
-            delay(3000) // Adjust the duration as needed
-            viewModel.clearSnackbarMessage()
-            navController.navigate(Screen.Home.route) {
-                popUpTo("sign_in") { inclusive = true }
             }
         }
     }
