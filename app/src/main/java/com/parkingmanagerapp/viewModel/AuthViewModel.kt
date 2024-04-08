@@ -83,8 +83,10 @@ class AuthViewModel @Inject constructor(private val userRepository: UserReposito
     }
 
     private fun checkAuthenticationState() {
-        _user.value = userRepository.getCurrentUser()
-        _signInStatus.value = _user.value != null
+        viewModelScope.launch {
+            _user.value = userRepository.getCurrentUser()
+            _signInStatus.value = _user.value != null
+        }
     }
 
     fun clearSnackbarMessage() {
