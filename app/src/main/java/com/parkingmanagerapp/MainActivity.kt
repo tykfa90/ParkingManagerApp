@@ -33,7 +33,7 @@ class MainActivity : ComponentActivity() {
 fun MainContent() {
     val navController = rememberNavController()
     val authViewModel: AuthViewModel = hiltViewModel()
-    val isUserAuthenticated by authViewModel.isUserAuthenticated.collectAsState(initial = null)
+    val isUserAuthenticated by authViewModel.signInStatus.collectAsState(initial = null)
     val snackbarHostState = remember { SnackbarHostState() }
 
     LaunchedEffect(isUserAuthenticated) {

@@ -1,6 +1,7 @@
 package com.parkingmanagerapp.model
 
 data class User(
+    val uid: String,
     val name: String,
     val surname: String,
     val phoneNumber: String,
@@ -8,11 +9,10 @@ data class User(
     val role: UserRole,
     val reservations: List<Reservation>
 ) {
-    fun isAdmin() = role == UserRole.ADMIN
-
     companion object {
         fun fromFirebaseUser(firebaseUser: com.google.firebase.auth.FirebaseUser, role: UserRole = UserRole.REGULAR): User {
             return User(
+                uid = firebaseUser.uid,
                 name = firebaseUser.displayName ?: "",
                 surname = "",
                 phoneNumber = firebaseUser.phoneNumber ?: "",

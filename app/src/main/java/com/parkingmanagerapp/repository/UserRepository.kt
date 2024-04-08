@@ -32,7 +32,7 @@ class UserRepository @Inject constructor(
     }
 
     // Function to sign up a new user, set their role to "regular", and store user details
-    suspend fun signUpUser(user: User, password: String): Boolean = withContext(ioDispatcher) {
+    suspend fun registerNewUser(user: User, password: String): Boolean = withContext(ioDispatcher) {
         try {
             val result = auth.createUserWithEmailAndPassword(user.email, password).await()
             val firebaseUser = result.user ?: return@withContext false
@@ -75,6 +75,36 @@ class UserRepository @Inject constructor(
             true
         } catch (e: Exception) {
             false
+        }
+    }
+
+    // Function to sign-out the current user
+    suspend fun signOutUser() = withContext(ioDispatcher) {
+        auth.signOut()
+    }
+
+    // Check whether there is an active signed-in user
+    fun isUserAuthenticated(): Boolean {
+        return auth.currentUser != null
+    }
+
+    // Reads currently active user information from database
+    fun getCurrentUser(): User? {
+        val userData = FirebaseAuth.getInstance().currentUser
+        return if (userData != null) {
+            // Optionally fetch additional user details from Firestore using firebaseUser.uid
+            // For simplicity, we're just constructing a User object with basic info here.
+            User(
+                uid = userData.uid,
+                name = "",
+                surname = "",
+                phoneNumber = userData.phoneNumber ?: "",
+                email = userData.email ?: "",
+                role = UserRole.REGULAR,
+                reservations = emptyList() // Assuming no reservations; adjust as necessary.
+            )
+        } else {
+            null
         }
     }
 }
