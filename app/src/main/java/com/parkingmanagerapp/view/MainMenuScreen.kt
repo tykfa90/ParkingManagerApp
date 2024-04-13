@@ -41,7 +41,7 @@ fun MainMenuScreen(navController: NavController, snackbarHostState: SnackbarHost
             Spacer(modifier = Modifier.height(16.dp))
 
             Button(
-                onClick = { navController.navigate(Screen.UserAccount.route) },
+                onClick = { navController.navigate(Screen.UserProfile.route) },
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text("User Account")

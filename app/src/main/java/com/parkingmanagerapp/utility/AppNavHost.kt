@@ -6,13 +6,14 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import com.parkingmanagerapp.view.EditUserProfileScreen
 import com.parkingmanagerapp.view.MainMenuScreen
 import com.parkingmanagerapp.view.ParkingSlotScreen
 import com.parkingmanagerapp.view.RegisterScreen
 import com.parkingmanagerapp.view.SignInScreen
 import com.parkingmanagerapp.view.SplashScreen
 import com.parkingmanagerapp.view.TestMenuScreen
-import com.parkingmanagerapp.view.UserAccountScreen
+import com.parkingmanagerapp.view.UserProfileScreen
 
 // Handling navigation inside the application
 @Composable
@@ -36,7 +37,14 @@ fun AppNavHost(navController: NavHostController, snackbarHostState: SnackbarHost
         composable(Screen.TestMenu.route) {
             TestMenuScreen(navController, snackbarHostState = SnackbarHostState())
         }
-        composable(Screen.UserAccount.route) {
-            UserAccountScreen(navController, snackbarHostState = SnackbarHostState()) }
+        composable(Screen.UserProfile.route) {
+            UserProfileScreen(navController, snackbarHostState = SnackbarHostState())
+        }
+        composable(Screen.EditUserProfile.route) {
+            EditUserProfileScreen(
+                navController,
+                snackbarHostState = SnackbarHostState()
+            )
+        }
     }
 }
