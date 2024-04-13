@@ -105,4 +105,30 @@ class UserRepository @Inject constructor(
             emptyList()
         }
     }
+
+    // Updates user data/details
+    suspend fun updateUserDetails(user: User): Boolean = withContext(ioDispatcher) {
+        try {
+            db.collection("users").document(user.uid)
+                .update(
+                    "name", user.name,
+                    "surname", user.surname,
+                    "phoneNumber", user.phoneNumber,
+                    "email", user.email
+                ).await()
+            true
+        } catch (e: Exception) {
+            false
+        }
+    }
+
+    suspend fun updateUserRole(userId: String, newRole: UserRole): Boolean = withContext(ioDispatcher) {
+        try {
+            db.collection("users").document(userId)
+                .update("role", newRole.toString()).await()
+            true
+        } catch (e: Exception) {
+            false
+        }
+    }
 }

@@ -14,11 +14,9 @@ import javax.inject.Inject
 @HiltViewModel
 class AuthViewModel @Inject constructor(private val userRepository: UserRepository) : ViewModel() {
 
-    private val _signInStatus = MutableStateFlow<Boolean?>(null)
+    val _signInStatus = MutableStateFlow<Boolean?>(null)
     val signInStatus = _signInStatus.asStateFlow()
-
-
-    private val _user = MutableStateFlow<User?>(null)
+    val _user = MutableStateFlow<User?>(null)
     val user = _user.asStateFlow()
 
     // Snackbar handling
@@ -30,6 +28,8 @@ class AuthViewModel @Inject constructor(private val userRepository: UserReposito
         checkAuthenticationState()
     }
 
+    // Registers a new user in the FirebaseAuth database. After generating uid,
+    // passes over the newUser account with additional data to the Firebase Firestore.
     fun registerWithFirebase(
         email: String,
         password: String
@@ -95,5 +95,49 @@ class AuthViewModel @Inject constructor(private val userRepository: UserReposito
 
     fun setSnackbarMessage(message: String) {
         _snackbarMessage.value = message
+    }
+
+    fun updateUserProfile(
+        name: String,
+        surname: String,
+        phoneNumber: String,
+        email: String
+    ) {
+        viewModelScope.launch {
+            // Fetch current user's role and reservations to preserve them in the update
+            val currentUser = _user.value
+            if (currentUser != null) {
+                val updatedUser = currentUser.copy(
+                    name = name,
+                    surname = surname,
+                    phoneNumber = phoneNumber,
+                    email = email
+                )
+                val success = userRepository.updateUserDetails(updatedUser)
+                if (success) {
+                    _user.value = updatedUser
+                    _snackbarMessage.value = "Profile updated successfully"
+                } else {
+                    _snackbarMessage.value = "Failed to update profile"
+                }
+            }
+        }
+    }
+
+    // Updates user role. Usage limited strictly to ADMIN level accounts.
+    fun updateUserRole(targetUserId: String, newRole: UserRole) {
+        viewModelScope.launch {
+            // Only allow admins to update user roles
+            if (_user.value?.role == UserRole.ADMIN) {
+                val success = userRepository.updateUserRole(targetUserId, newRole)
+                if (success) {
+                    _snackbarMessage.value = "User role updated successfully"
+                } else {
+                    _snackbarMessage.value = "Failed to update user role"
+                }
+            } else {
+                _snackbarMessage.value = "Unauthorized to update roles"
+            }
+        }
     }
 }
