@@ -13,12 +13,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.parkingmanagerapp.ui.theme.StandardScreenLayout
 import com.parkingmanagerapp.utility.Screen
+import com.parkingmanagerapp.viewModel.AuthViewModel
 
 @Composable
-fun MainMenuScreen(navController: NavController, snackbarHostState: SnackbarHostState) {
+fun MainMenuScreen(navController: NavController, snackbarHostState: SnackbarHostState, viewModel: AuthViewModel = hiltViewModel()) {
     StandardScreenLayout(
         title = "Main Menu",
         snackbarHostState = snackbarHostState
@@ -45,6 +47,21 @@ fun MainMenuScreen(navController: NavController, snackbarHostState: SnackbarHost
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text("User Account")
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Button(
+                onClick = {
+                    viewModel.signOut()
+                    navController.navigate(Screen.SignIn.route) {
+                        // Adjust navigation to clear back stack properly
+                        popUpTo(Screen.SignIn.route) { inclusive = true }
+                    }
+                },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Sign Out")
             }
 
             Spacer(modifier = Modifier.height(16.dp))

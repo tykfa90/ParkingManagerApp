@@ -120,7 +120,7 @@ fun RegisterScreen(
             Button(
                 onClick = {
                     if (password == confirmPassword) {
-                        viewModel.registerWithFirebase(email, password)
+                        viewModel.registerWithEmailAndPassword(email, password)
                     } else {
                         viewModel.setSnackbarMessage("Passwords do not match")
                     }

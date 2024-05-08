@@ -16,6 +16,7 @@ class AuthViewModel @Inject constructor(private val userRepository: UserReposito
 
     val _signInStatus = MutableStateFlow<Boolean?>(null)
     val signInStatus = _signInStatus.asStateFlow()
+
     val _user = MutableStateFlow<User?>(null)
     val user = _user.asStateFlow()
 
@@ -28,9 +29,24 @@ class AuthViewModel @Inject constructor(private val userRepository: UserReposito
         checkAuthenticationState()
     }
 
+    // Signs in the user, using the basic e-mail + password method
+    fun signIn(email: String, password: String) {
+        viewModelScope.launch {
+            val result = userRepository.signInUser(email, password)
+            if (result != null) {
+                _user.value = result
+                _signInStatus.value = true
+                _snackbarMessage.value = "Sign in successful!"
+            } else {
+                _signInStatus.value = false
+                _snackbarMessage.value = "Sign in failed"
+            }
+        }
+    }
+
     // Registers a new user in the FirebaseAuth database. After generating uid,
     // passes over the newUser account with additional data to the Firebase Firestore.
-    fun registerWithFirebase(
+    fun registerWithEmailAndPassword(
         email: String,
         password: String
     ) {
@@ -40,7 +56,7 @@ class AuthViewModel @Inject constructor(private val userRepository: UserReposito
                 surname = "",
                 phoneNumber = "",
                 email = email,
-                role = UserRole.REGULAR,
+                role = UserRole.REGULAR, // Defaults all new accounts to REGULAR type account
                 uid = "",
                 reservations = emptyList()
             )
@@ -55,20 +71,6 @@ class AuthViewModel @Inject constructor(private val userRepository: UserReposito
             } else {
                 _signInStatus.value = false
                 _snackbarMessage.value = "Registration failed. Please try again."
-            }
-        }
-    }
-
-    fun signIn(email: String, password: String) {
-        viewModelScope.launch {
-            val result = userRepository.signInUser(email, password)
-            if (result != null) {
-                _user.value = result
-                _signInStatus.value = true
-                _snackbarMessage.value = "Sign in successful!"
-            } else {
-                _signInStatus.value = false
-                _snackbarMessage.value = "Sign in failed"
             }
         }
     }
@@ -97,6 +99,7 @@ class AuthViewModel @Inject constructor(private val userRepository: UserReposito
         _snackbarMessage.value = message
     }
 
+    // Updates user profile fields accessible for REGULAR type user
     fun updateUserProfile(
         name: String,
         surname: String,
@@ -105,38 +108,27 @@ class AuthViewModel @Inject constructor(private val userRepository: UserReposito
     ) {
         viewModelScope.launch {
             // Fetch current user's role and reservations to preserve them in the update
-            val currentUser = _user.value
-            if (currentUser != null) {
-                val updatedUser = currentUser.copy(
-                    name = name,
-                    surname = surname,
-                    phoneNumber = phoneNumber,
-                    email = email
-                )
-                val success = userRepository.updateUserDetails(updatedUser)
-                if (success) {
-                    _user.value = updatedUser
-                    _snackbarMessage.value = "Profile updated successfully"
-                } else {
-                    _snackbarMessage.value = "Failed to update profile"
-                }
+            val updatedUser = _user.value?.copy(name = name, surname = surname, phoneNumber = phoneNumber, email = email)
+            if (updatedUser != null && userRepository.updateUserDetails(updatedUser)) {
+                _user.value = updatedUser
+                _snackbarMessage.value = "Profile updated successfully."
+            } else {
+                _snackbarMessage.value = "Failed to update profile."
             }
         }
     }
 
-    // Updates user role. Usage limited strictly to ADMIN level accounts.
+    // Updates user role. Usage limited strictly to ADMIN level accounts
     fun updateUserRole(targetUserId: String, newRole: UserRole) {
         viewModelScope.launch {
-            // Only allow admins to update user roles
             if (_user.value?.role == UserRole.ADMIN) {
-                val success = userRepository.updateUserRole(targetUserId, newRole)
-                if (success) {
-                    _snackbarMessage.value = "User role updated successfully"
+                if (userRepository.updateUserRole(targetUserId, newRole)) {
+                    _snackbarMessage.value = "User role updated successfully."
                 } else {
-                    _snackbarMessage.value = "Failed to update user role"
+                    _snackbarMessage.value = "Failed to update user role."
                 }
             } else {
-                _snackbarMessage.value = "Unauthorized to update roles"
+                _snackbarMessage.value = "Unauthorized to update roles."
             }
         }
     }
