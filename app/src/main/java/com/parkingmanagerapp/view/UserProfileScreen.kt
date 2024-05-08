@@ -23,6 +23,14 @@ fun UserProfileScreen(
 ) {
     val user by viewModel.user.collectAsState()
 
+    // Observe updates and display snackbar messages
+    LaunchedEffect(key1 = viewModel.snackbarMessage) {
+        viewModel.snackbarMessage.value?.let { message ->
+            snackbarHostState.showSnackbar(message)
+            viewModel.clearSnackbarMessage()
+        }
+    }
+
     StandardScreenLayout(title = "User Account", snackbarHostState = snackbarHostState) {
         Column {
             Text("User Details", style = MaterialTheme.typography.titleLarge)
@@ -35,14 +43,6 @@ fun UserProfileScreen(
             }) {
                 Text("Edit Profile")
             }
-        }
-    }
-
-    // Observe updates and display snackbar messages
-    LaunchedEffect(key1 = viewModel.snackbarMessage) {
-        viewModel.snackbarMessage.value?.let { message ->
-            snackbarHostState.showSnackbar(message)
-            viewModel.clearSnackbarMessage()
         }
     }
 }
