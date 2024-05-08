@@ -6,6 +6,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import com.parkingmanagerapp.view.AdminPanelScreen
 import com.parkingmanagerapp.view.EditUserProfileScreen
 import com.parkingmanagerapp.view.MainMenuScreen
 import com.parkingmanagerapp.view.ParkingSlotScreen
@@ -42,6 +43,12 @@ fun AppNavHost(navController: NavHostController, snackbarHostState: SnackbarHost
         }
         composable(Screen.EditUserProfile.route) {
             EditUserProfileScreen(
+                navController,
+                snackbarHostState = SnackbarHostState()
+            )
+        }
+        composable(Screen.AdminMenu.route) {
+            AdminPanelScreen(
                 navController,
                 snackbarHostState = SnackbarHostState()
             )
