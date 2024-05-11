@@ -52,13 +52,12 @@ class AuthViewModel @Inject constructor(private val userRepository: UserReposito
     ) {
         viewModelScope.launch {
             val newUser = User(
+                uid = "",
                 name = "",
                 surname = "",
                 phoneNumber = "",
                 email = email,
-                role = UserRole.REGULAR, // Defaults all new accounts to REGULAR type account
-                uid = "",
-                reservations = emptyList()
+                role = UserRole.REGULAR // Defaults all new accounts to REGULAR type account
             )
 
             val success = userRepository.registerNewUser(newUser, password)

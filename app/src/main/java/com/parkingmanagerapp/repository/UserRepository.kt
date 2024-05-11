@@ -1,5 +1,6 @@
 package com.parkingmanagerapp.repository
 
+import android.util.Log
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.parkingmanagerapp.model.Reservation
@@ -28,6 +29,7 @@ class UserRepository @Inject constructor(
             val role = UserRole.valueOf(docSnapshot.getString("role") ?: "REGULAR")
             User.fromFirebaseUser(firebaseUser, role)
         } catch (e: Exception) {
+            Log.e("UserRepository", "Error signing in user: ${e.localizedMessage}")
             null
         }
     }
@@ -37,11 +39,17 @@ class UserRepository @Inject constructor(
         try {
             val result = auth.createUserWithEmailAndPassword(user.email, password).await()
             val firebaseUser = result.user ?: return@withContext false
-            val newUser = User.fromFirebaseUser(firebaseUser, UserRole.REGULAR)
-            db.collection("users").document(firebaseUser.uid)
+
+            // Assign the UID from the newly created Firebase user to your User object
+            val newUser = user.copy(uid = firebaseUser.uid)
+
+            // Update the database with the User object that now includes the UID
+            db.collection("users").document(newUser.uid)
                 .set(newUser.toMap()).await()
             true
         } catch (e: Exception) {
+            // Consider logging the error for better debuggability
+            Log.e("UserRepository", "Registration failed: ${e.localizedMessage}")
             false
         }
     }
@@ -53,8 +61,7 @@ class UserRepository @Inject constructor(
             "surname" to surname,
             "phoneNumber" to phoneNumber,
             "email" to email,
-            "role" to role.toString(),
-            "reservations" to reservations
+            "role" to role.toString()
         )
     }
 
@@ -71,9 +78,6 @@ class UserRepository @Inject constructor(
             val docSnapshot = db.collection("users").document(firebaseUser.uid).get().await()
             val role = UserRole.valueOf(docSnapshot.getString("role") ?: "REGULAR")
 
-            // Attempt to fetch reservations associated with the account found by the UID
-            val reservationsList = convertToReservationList(docSnapshot.get("reservations"))
-
             // Create and return the User object with details fetched from Firestore
             return@withContext User(
                 uid = firebaseUser.uid,
@@ -81,12 +85,12 @@ class UserRepository @Inject constructor(
                 surname = docSnapshot.getString("surname") ?: "",
                 phoneNumber = firebaseUser.phoneNumber ?: "",
                 email = firebaseUser.email ?: "",
-                role = role,
-                reservations = reservationsList
+                role = role
             )
         } catch (e: Exception) {
             // Handle any errors that might occur during Firestore access
             e.printStackTrace()
+            Log.e("UserRepository", "Error fetching current user: ${e.localizedMessage}")
             return@withContext null
         }
     }
@@ -118,6 +122,7 @@ class UserRepository @Inject constructor(
                 ).await()
             true
         } catch (e: Exception) {
+            Log.e("UserRepository", "Error updating user details: ${e.localizedMessage}")
             false
         }
     }
@@ -128,6 +133,7 @@ class UserRepository @Inject constructor(
                 .update("role", newRole.toString()).await()
             true
         } catch (e: Exception) {
+            Log.e("UserRepository", "Error updating user role: ${e.localizedMessage}")
             false
         }
     }

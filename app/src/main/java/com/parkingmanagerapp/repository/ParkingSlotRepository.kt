@@ -3,7 +3,6 @@ package com.parkingmanagerapp.repository
 import android.util.Log
 import com.google.firebase.firestore.FirebaseFirestore
 import com.parkingmanagerapp.model.ParkingSlot
-import com.parkingmanagerapp.model.Reservation
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 import kotlin.coroutines.CoroutineContext
@@ -30,13 +29,21 @@ class ParkingSlotRepository @Inject constructor(
             .documents
             .mapNotNull { document ->
                 // Manually extracting each field to avoid automatic Firebase object mapping mistakes
+                val slotID = document.getString("slotID") ?: ""
                 val slotLabel = document.getString("slotLabel") ?: ""
                 val isOccupied = document.getBoolean("isOccupied") ?: false
+                val slotLength = document.getDouble("slotLength") ?: 0.0
+                val slotWidth = document.getDouble("slotWidth") ?: 0.0
+                val slotHeight = document.getDouble("slotHeight") ?: 0.0
 
                 // Constructing the ParkingSlot object with extracted values
                 ParkingSlot(
+                    slotID = slotID,
                     slotLabel = slotLabel,
-                    isOccupied = isOccupied
+                    isOccupied = isOccupied,
+                    slotLength = slotLength,
+                    slotWidth = slotWidth,
+                    slotHeight = slotHeight
                 )
             }
 
@@ -44,17 +51,5 @@ class ParkingSlotRepository @Inject constructor(
     } catch (e: Exception) {
         Log.e("ParkingSlotError", "Error fetching parking slots", e)
         emptyList()
-    }
-
-    fun getAllReservations(): List<Reservation>? {
-        TODO()
-    }
-
-    fun getUserReservations(): List<Reservation>? {
-        TODO()
-    }
-
-    fun cancelReservation(reservation: Reservation) {
-        TODO()
     }
 }

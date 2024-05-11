@@ -1,24 +1,22 @@
 package com.parkingmanagerapp.model
 
 data class User(
-    val uid: String,
+    var uid: String,
     val name: String,
     val surname: String,
     val phoneNumber: String,
     val email: String,
-    val role: UserRole,
-    val reservations: List<Reservation>
+    val role: UserRole
 ) {
     companion object {
         fun fromFirebaseUser(firebaseUser: com.google.firebase.auth.FirebaseUser, role: UserRole = UserRole.REGULAR): User {
             return User(
                 uid = firebaseUser.uid,
-                name = firebaseUser.displayName ?: "",
+                name = "",
                 surname = "",
                 phoneNumber = firebaseUser.phoneNumber ?: "",
                 email = firebaseUser.email ?: "",
-                role = role,
-                reservations = emptyList()
+                role = role
             )
         }
     }
