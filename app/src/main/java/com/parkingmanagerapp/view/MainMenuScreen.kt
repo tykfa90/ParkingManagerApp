@@ -31,7 +31,6 @@ fun MainMenuScreen(navController: NavController, snackbarHostState: SnackbarHost
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(paddingValues)
                 .padding(16.dp),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
