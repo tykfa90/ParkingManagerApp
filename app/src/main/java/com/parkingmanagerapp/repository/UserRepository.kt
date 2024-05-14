@@ -3,7 +3,6 @@ package com.parkingmanagerapp.repository
 import android.util.Log
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
-import com.parkingmanagerapp.model.Reservation
 import com.parkingmanagerapp.model.User
 import com.parkingmanagerapp.model.UserRole
 import kotlinx.coroutines.tasks.await
@@ -92,21 +91,6 @@ class UserRepository @Inject constructor(
             e.printStackTrace()
             Log.e("UserRepository", "Error fetching current user: ${e.localizedMessage}")
             return@withContext null
-        }
-    }
-
-    // Safely convert reservations list or supply an empty one
-    private fun convertToReservationList(data: Any?): List<Reservation> {
-        return if (data is List<*>) {
-            @Suppress("UNCHECKED_CAST")
-            val reservationList = data as? List<Reservation>
-
-            reservationList ?: run {
-                emptyList<Reservation>()
-            }
-        } else {
-            // Handle the case where data is not a list
-            emptyList()
         }
     }
 

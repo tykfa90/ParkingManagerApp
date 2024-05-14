@@ -1,7 +1,7 @@
 package com.parkingmanagerapp.model
 
 data class ParkingSlot(
-    val slotID: String,
+    var slotID: String,
     val slotLabel: String = "",
     val isOccupied: Boolean = false,
     val slotLength: Double,
