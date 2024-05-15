@@ -10,6 +10,7 @@ import com.parkingmanagerapp.view.MainMenuScreen
 import com.parkingmanagerapp.view.ParkingSlotScreen
 import com.parkingmanagerapp.view.SplashScreen
 import com.parkingmanagerapp.view.TestMenuScreen
+import com.parkingmanagerapp.view.adminPanel.AdmParkSlotScreen
 import com.parkingmanagerapp.view.adminPanel.AdminPanelScreen
 import com.parkingmanagerapp.view.regUserPanel.EditUserProfileScreen
 import com.parkingmanagerapp.view.regUserPanel.RegisterScreen
@@ -24,10 +25,10 @@ fun AppNavHost(navController: NavHostController, snackbarHostState: SnackbarHost
             SplashScreen(navController, authViewModel = hiltViewModel())
         }
         composable(Screen.SignIn.route) {
-            SignInScreen(navController, snackbarHostState = SnackbarHostState())
+            SignInScreen(navController, snackbarHostState = snackbarHostState)
         }
         composable(Screen.Register.route) {
-            RegisterScreen(navController, snackbarHostState = SnackbarHostState())
+            RegisterScreen(navController, snackbarHostState = snackbarHostState)
         }
         composable(Screen.Home.route) {
             MainMenuScreen(navController, snackbarHostState)
@@ -36,27 +37,33 @@ fun AppNavHost(navController: NavHostController, snackbarHostState: SnackbarHost
             ParkingSlotScreen()
         }
         composable(Screen.TestMenu.route) {
-            TestMenuScreen(navController, snackbarHostState = SnackbarHostState())
+            TestMenuScreen(navController, snackbarHostState = snackbarHostState)
         }
         composable(Screen.UserProfile.route) {
-            UserProfileScreen(navController, snackbarHostState = SnackbarHostState())
+            UserProfileScreen(navController, snackbarHostState = snackbarHostState)
         }
         composable(Screen.EditUserProfile.route) {
             EditUserProfileScreen(
                 navController,
-                snackbarHostState = SnackbarHostState()
+                snackbarHostState = snackbarHostState
             )
         }
         composable(Screen.AdminMenu.route) {
             AdminPanelScreen(
                 navController,
-                snackbarHostState = SnackbarHostState()
+                snackbarHostState = snackbarHostState
             )
         }
         composable(Screen.AdminMenuUserAccounts.route) {
             AdminPanelScreen(
                 navController,
-                snackbarHostState = SnackbarHostState()
+                snackbarHostState = snackbarHostState
+            )
+        }
+        composable(Screen.AdminParkingSlots.route) {
+            AdmParkSlotScreen(
+                navController,
+                snackbarHostState = snackbarHostState
             )
         }
     }

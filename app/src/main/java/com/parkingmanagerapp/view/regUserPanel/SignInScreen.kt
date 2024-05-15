@@ -64,11 +64,11 @@ fun SignInScreen(
 
     StandardScreenLayout(
         title = "Sign In",
-        snackbarHostState = snackbarHostState // Pass it here to the StandardScreenLayout
+        snackbarHostState = snackbarHostState
     ) {
         Column(
             modifier = Modifier
-                .padding(16.dp) // Apply consistent padding
+                .padding(16.dp)
                 .fillMaxWidth(),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {

@@ -45,7 +45,7 @@ class AuthViewModel @Inject constructor(private val userRepository: UserReposito
     }
 
     // Registers a new user in the FirebaseAuth database. After generating uid,
-    // passes over the newUser account with additional data to the Firebase Firestore.
+    // passes over the newUser account with additional data to the Firebase Firestore
     fun registerWithEmailAndPassword(
         email: String,
         password: String
@@ -62,7 +62,7 @@ class AuthViewModel @Inject constructor(private val userRepository: UserReposito
 
             val success = userRepository.registerNewUser(newUser, password)
             if (success) {
-                // Upon successful registration, update the UI state and user flow.
+                // Upon successful registration, update the UI state and user flow
                 _user.value =
                     newUser // Temporarily set user value
                 _signInStatus.value = true

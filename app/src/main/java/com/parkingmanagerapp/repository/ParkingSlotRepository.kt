@@ -11,7 +11,7 @@ class ParkingSlotRepository @Inject constructor(
 ) {
     private val parkingSlotCollection = db.collection("parkingSlots")
 
-    // Adds new parking slot to the database.
+    // Adds new parking slot to the database
     suspend fun addParkingSlot(parkingSlot: ParkingSlot): Result<Unit> {
         return try {
             parkingSlotCollection.add(parkingSlot.toMap()).await()
@@ -22,7 +22,7 @@ class ParkingSlotRepository @Inject constructor(
         }
     }
 
-    // Fetches all parking slots from the database.
+    // Fetches all parking slots from the database
     suspend fun getAllParkingSlots(): List<ParkingSlot> = try {
         val parkingSlots = parkingSlotCollection
             .get()
@@ -37,7 +37,7 @@ class ParkingSlotRepository @Inject constructor(
         emptyList()
     }
 
-    // Updates the specific parking slot, selected by its unique database ID.
+    // Updates the specific parking slot, selected by its unique database ID
     suspend fun updateParkingSlot(slotID: String, updatedSlot: ParkingSlot): Result<Unit> {
         return try {
             parkingSlotCollection.document(slotID).set(updatedSlot.toMap()).await()
@@ -48,7 +48,7 @@ class ParkingSlotRepository @Inject constructor(
         }
     }
 
-    // Deletes the specific parking slot, selected by its unique database ID.
+    // Deletes the specific parking slot, selected by its unique database ID
     suspend fun deleteParkingSlot(slotID: String): Result<Unit> {
         return try {
             parkingSlotCollection.document(slotID).delete().await()
@@ -59,7 +59,7 @@ class ParkingSlotRepository @Inject constructor(
         }
     }
 
-    // Map function to convert ParkingSlot to Firestore format.
+    // Map function to convert ParkingSlot to Firestore format
     private fun ParkingSlot.toMap(): Map<String, Any> {
         return mapOf(
             "slotLabel" to slotLabel,

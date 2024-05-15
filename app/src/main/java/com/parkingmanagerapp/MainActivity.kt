@@ -58,7 +58,7 @@ fun MainContent() {
                 }
             }
 
-            null -> {} // Optional: Handle loading or initialization state
+            null -> {} // TODO("Handle loading or initialization state")
         }
     }
 

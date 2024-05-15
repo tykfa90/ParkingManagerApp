@@ -40,7 +40,7 @@ fun SplashScreen(navController: NavController, authViewModel: AuthViewModel) {
                 launchSingleTop = true
             }
 
-            null -> {} // Optional: Handle the initial or loading state
+            null -> {} // TODO("Handle the initial or loading state")
         }
     }
 

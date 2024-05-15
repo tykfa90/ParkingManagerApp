@@ -47,7 +47,7 @@ class UserRepository @Inject constructor(
                 .set(newUser.toMap()).await()
             true
         } catch (e: Exception) {
-            // Consider logging the error for better debuggability
+            // Logging the error for more clear debug
             Log.e("UserRepository", "Registration failed: ${e.localizedMessage}")
             false
         }

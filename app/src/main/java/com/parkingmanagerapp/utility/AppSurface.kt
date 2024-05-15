@@ -21,7 +21,7 @@ fun AppSurface(navController: NavHostController, snackbarHostState: SnackbarHost
     ) {
         Scaffold(
             snackbarHost = { SnackbarHost(snackbarHostState) }
-        ) { contentPadding ->  // The padding values are here if you need them
+        ) { contentPadding ->
             Box(modifier = Modifier.padding(contentPadding)) {
                 AppNavHost(navController = navController, snackbarHostState = snackbarHostState)
             }
