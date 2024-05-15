@@ -32,7 +32,7 @@ import com.parkingmanagerapp.ui.theme.StandardScreenLayout
 import com.parkingmanagerapp.viewModel.ParkingSlotViewModel
 
 @Composable
-fun AdmParkSlotScreen(
+fun AdminParkingSlotScreen(
     navController: NavController,
     snackbarHostState: SnackbarHostState,
     viewModel: ParkingSlotViewModel = hiltViewModel()
@@ -41,11 +41,12 @@ fun AdmParkSlotScreen(
     var selectedSlot by remember { mutableStateOf<ParkingSlot?>(null) }
     var showEditDialog by remember { mutableStateOf(false) }
     var showDeleteDialog by remember { mutableStateOf(false) }
+    var showAddDialog by remember { mutableStateOf(false) }
 
     StandardScreenLayout(
         title = "Manage Parking Slots",
         snackbarHostState = snackbarHostState
-    ) { paddingValues ->
+    ) {
         Box(modifier = Modifier.fillMaxSize()) {
             ListScreenLayout(
                 listItems = parkingSlots,
@@ -61,13 +62,24 @@ fun AdmParkSlotScreen(
 
             // Add Parking Slot Button
             FloatingActionButton(
-                onClick = { /* Implement add slot logic or show dialog */ TODO() },
+                onClick = { showAddDialog = true },
                 modifier = Modifier
                     .padding(16.dp)
                     .align(Alignment.BottomEnd)
             ) {
                 Icon(imageVector = Icons.Default.Add, contentDescription = "Add")
             }
+        }
+
+        // Add Parking Slot Dialog
+        if (showAddDialog) {
+            AddParkingSlotDialog(
+                onDismiss = { showAddDialog = false },
+                onSave = { newSlot ->
+                    viewModel.addNewParkingSlot(newSlot)
+                    showAddDialog = false
+                }
+            )
         }
 
         // Edit Parking Slot Dialog

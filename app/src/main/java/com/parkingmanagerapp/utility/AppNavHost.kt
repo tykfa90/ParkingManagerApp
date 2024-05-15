@@ -6,15 +6,15 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.parkingmanagerapp.view.MainMenuScreen
-import com.parkingmanagerapp.view.ParkingSlotScreen
-import com.parkingmanagerapp.view.SplashScreen
 import com.parkingmanagerapp.view.TestMenuScreen
-import com.parkingmanagerapp.view.adminPanel.AdmParkSlotScreen
 import com.parkingmanagerapp.view.adminPanel.AdminPanelScreen
+import com.parkingmanagerapp.view.adminPanel.AdminParkingSlotScreen
 import com.parkingmanagerapp.view.regUserPanel.EditUserProfileScreen
+import com.parkingmanagerapp.view.regUserPanel.MainMenuScreen
+import com.parkingmanagerapp.view.regUserPanel.ParkingSlotScreen
 import com.parkingmanagerapp.view.regUserPanel.RegisterScreen
 import com.parkingmanagerapp.view.regUserPanel.SignInScreen
+import com.parkingmanagerapp.view.regUserPanel.SplashScreen
 import com.parkingmanagerapp.view.regUserPanel.UserProfileScreen
 
 // Handling navigation inside the application
@@ -61,7 +61,7 @@ fun AppNavHost(navController: NavHostController, snackbarHostState: SnackbarHost
             )
         }
         composable(Screen.AdminParkingSlots.route) {
-            AdmParkSlotScreen(
+            AdminParkingSlotScreen(
                 navController,
                 snackbarHostState = snackbarHostState
             )

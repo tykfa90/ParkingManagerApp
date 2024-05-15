@@ -13,8 +13,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class ParkingSlotViewModel @Inject constructor(private val repository: ParkingSlotRepository) :
-    ViewModel() {
+class ParkingSlotViewModel @Inject constructor(private val repository: ParkingSlotRepository) : ViewModel() {
     private val _parkingSlots = MutableStateFlow<List<ParkingSlot>>(emptyList())
     val parkingSlots: StateFlow<List<ParkingSlot>> = _parkingSlots.asStateFlow()
 

@@ -1,4 +1,4 @@
-package com.parkingmanagerapp.view
+package com.parkingmanagerapp.view.regUserPanel
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
