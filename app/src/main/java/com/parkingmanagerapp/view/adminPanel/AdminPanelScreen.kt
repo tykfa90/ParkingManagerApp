@@ -22,7 +22,7 @@ fun AdminPanelScreen(
     navController: NavController,
     snackbarHostState: SnackbarHostState
 ) {
-    StandardScreenLayout(title = "Admin Panel", snackbarHostState = snackbarHostState) {
+    StandardScreenLayout(title = "Administrator Panel", snackbarHostState = snackbarHostState) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -43,7 +43,7 @@ fun AdminPanelScreen(
                 onClick = { navController.navigate(Screen.AdminMenuUserAccounts.route) },
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text("Manage User Accounts (placeholder)")
+                Text("Manage User Accounts")
             }
         }
     }

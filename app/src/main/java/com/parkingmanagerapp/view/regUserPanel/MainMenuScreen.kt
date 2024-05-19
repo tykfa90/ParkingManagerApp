@@ -76,15 +76,6 @@ fun MainMenuScreen(navController: NavController, snackbarHostState: SnackbarHost
             ) {
                 Text("Sign Out")
             }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Button(
-                onClick = { navController.navigate(Screen.TestMenu.route) },
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text("Test Menu")
-            }
         }
     }
 }
