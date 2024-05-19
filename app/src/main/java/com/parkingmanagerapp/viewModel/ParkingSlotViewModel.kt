@@ -21,12 +21,14 @@ class ParkingSlotViewModel @Inject constructor(private val repository: ParkingSl
         fetchParkingSlots()
     }
 
+    // Returns all parking slots, also reloading the displayed list
     private fun fetchParkingSlots() {
         viewModelScope.launch {
             _parkingSlots.value = repository.getAllParkingSlots()
         }
     }
 
+    // Adds new parking slot
     fun addNewParkingSlot(parkingSlot: ParkingSlot) {
         viewModelScope.launch {
             val result = repository.addParkingSlot(parkingSlot)
@@ -38,6 +40,7 @@ class ParkingSlotViewModel @Inject constructor(private val repository: ParkingSl
         }
     }
 
+    // Edits a parking slot
     fun modifyParkingSlot(slotID: String, updatedSlot: ParkingSlot) {
         viewModelScope.launch {
             val result = repository.updateParkingSlot(slotID, updatedSlot)
@@ -49,6 +52,7 @@ class ParkingSlotViewModel @Inject constructor(private val repository: ParkingSl
         }
     }
 
+    // Deletes a parking slot
     fun removeParkingSlot(slotID: String) {
         viewModelScope.launch {
             val result = repository.deleteParkingSlot(slotID)

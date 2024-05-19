@@ -28,7 +28,7 @@ class UserRepository @Inject constructor(
             val role = UserRole.valueOf(docSnapshot.getString("role") ?: "REGULAR")
             User.fromFirebaseUser(firebaseUser, role)
         } catch (e: Exception) {
-            Log.e("UserRepository", "Error signing in user: ${e.localizedMessage}")
+            Log.e("UserRepository", "Error while signing in user: ${e.localizedMessage}")
             null
         }
     }
@@ -48,7 +48,7 @@ class UserRepository @Inject constructor(
             true
         } catch (e: Exception) {
             // Logging the error for more clear debug
-            Log.e("UserRepository", "Registration failed: ${e.localizedMessage}")
+            Log.e("UserRepository", "Error while registering new user: ${e.localizedMessage}")
             false
         }
     }
@@ -89,7 +89,7 @@ class UserRepository @Inject constructor(
         } catch (e: Exception) {
             // Handle any errors that might occur during Firestore access
             e.printStackTrace()
-            Log.e("UserRepository", "Error fetching current user: ${e.localizedMessage}")
+            Log.e("UserRepository", "Error while fetching current user: ${e.localizedMessage}")
             return@withContext null
         }
     }
@@ -129,6 +129,7 @@ class UserRepository @Inject constructor(
             val usersSnapshot = db.collection("users").get().await()
             usersSnapshot.documents.mapNotNull { it.toObject(User::class.java) }
         } catch (e: Exception) {
+            Log.e("UserRepository", "Error while fetching all user accounts: ${e.localizedMessage}")
             emptyList()
         }
     }
@@ -138,7 +139,7 @@ class UserRepository @Inject constructor(
             db.collection("users").document(userId).delete().await()
             true
         } catch (e: Exception) {
-            Log.e("UserRepositoryError", "Error while deleting user account ${e.localizedMessage}")
+            Log.e("UserRepository", "Error while deleting user account: ${e.localizedMessage}")
             false
         }
     }

@@ -8,21 +8,23 @@ import javax.inject.Inject
 import kotlin.coroutines.CoroutineContext
 
 class ParkingSlotRepository @Inject constructor(
-    db: FirebaseFirestore,
+    private val db: FirebaseFirestore,
     private val coroutineContext: CoroutineContext
 ) {
     private val parkingSlotCollection = db.collection("parkingSlots")
 
+    // Adds parking slot to the database
     suspend fun addParkingSlot(parkingSlot: ParkingSlot): Result<Unit> {
         return try {
             parkingSlotCollection.add(parkingSlot).await()
             Result.success(Unit)
         } catch (e: Exception) {
-            Log.e("ParkingSlotError", "Error while adding parking slot ${e.localizedMessage}")
+            Log.e("ParkingSlotRepository", "Error while adding new parking slot: ${e.localizedMessage}")
             Result.failure(e)
         }
     }
 
+    // Fetches all parking slots from database as a list
     suspend fun getAllParkingSlots(): List<ParkingSlot> = try {
         val parkingSlots = parkingSlotCollection
             .get()
@@ -36,17 +38,18 @@ class ParkingSlotRepository @Inject constructor(
 
         parkingSlots
     } catch (e: Exception) {
-        Log.e("ParkingSlotError", "Error while fetching parking slots ${e.localizedMessage}")
+        Log.e("ParkingSlotRepository", "Error while fetching all parking slots: ${e.localizedMessage}")
         emptyList()
     }
 
+    //
     suspend fun updateParkingSlot(slotID: String, updatedSlot: ParkingSlot): Result<Unit> {
         return try {
             parkingSlotCollection.document(slotID)
                 .set(updatedSlot).await()
             Result.success(Unit)
         } catch (e: Exception) {
-            Log.e("ParkingSlotError", "Error while updating parking slot ${e.localizedMessage}")
+            Log.e("ParkingSlotRepository", "Error while updating parking slot: ${e.localizedMessage}")
             Result.failure(e)
         }
     }
@@ -57,7 +60,7 @@ class ParkingSlotRepository @Inject constructor(
                 .delete().await()
             Result.success(Unit)
         } catch (e: Exception) {
-            Log.e("ParkingSlotError", "Error while deleting parking slot ${e.localizedMessage}")
+            Log.e("ParkingSlotRepository", "Error while deleting parking slot: ${e.localizedMessage}")
             Result.failure(e)
         }
     }

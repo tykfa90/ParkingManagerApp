@@ -1,20 +1,16 @@
 package com.parkingmanagerapp.model
 
 data class ParkingSlot(
-    var slotID: String,
+    var slotID: String = "", // Default value for slotID
     val slotLabel: String = "",
     val isOccupied: Boolean = false,
-    val slotLength: Double,
-    val slotWidth: Double,
-    val slotHeight: Double
+    val annotation: String = ""
 ) {
-    // No-argument constructor for Firestore deserialization purposes
+    // No-argument constructor for Firestore deserialization
     constructor() : this(
         slotID = "",
         slotLabel = "",
         isOccupied = false,
-        slotLength = 0.0,
-        slotWidth = 0.0,
-        slotHeight = 0.0
+        annotation = ""
     )
 }
