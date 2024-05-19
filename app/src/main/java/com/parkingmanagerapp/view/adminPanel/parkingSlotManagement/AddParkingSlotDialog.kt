@@ -1,4 +1,4 @@
-package com.parkingmanagerapp.view.adminPanel
+package com.parkingmanagerapp.view.adminPanel.parkingSlotManagement
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer

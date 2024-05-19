@@ -40,6 +40,16 @@ class AuthViewModel @Inject constructor(private val userRepository: UserReposito
         }
     }
 
+    // Sort users by name
+    fun sortUsersByName() {
+        _users.value = _users.value.sortedBy { it.name }
+    }
+
+    // Sort users by surname
+    fun sortUsersBySurname() {
+        _users.value = _users.value.sortedBy { it.surname }
+    }
+
     // Signs in the user, using the basic e-mail + password method
     fun signIn(email: String, password: String) {
         viewModelScope.launch {

@@ -8,7 +8,7 @@ import javax.inject.Inject
 import kotlin.coroutines.CoroutineContext
 
 class ParkingSlotRepository @Inject constructor(
-    private val db: FirebaseFirestore,
+    db: FirebaseFirestore,
     private val coroutineContext: CoroutineContext
 ) {
     private val parkingSlotCollection = db.collection("parkingSlots")

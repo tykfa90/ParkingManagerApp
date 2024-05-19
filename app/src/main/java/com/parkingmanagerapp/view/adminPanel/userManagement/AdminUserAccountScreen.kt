@@ -1,7 +1,6 @@
-package com.parkingmanagerapp.view.adminPanel
+package com.parkingmanagerapp.view.adminPanel.userManagement
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -11,10 +10,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -46,6 +48,7 @@ fun AdminUserAccountScreen(
     var selectedUser by remember { mutableStateOf<User?>(null) }
     var showEditDialog by remember { mutableStateOf(false) }
     var showDeleteDialog by remember { mutableStateOf(false) }
+    var showAddDialog by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
         viewModel.fetchAllUsers()
@@ -55,11 +58,25 @@ fun AdminUserAccountScreen(
         title = "Manage User Accounts",
         snackbarHostState = snackbarHostState
     ) {
-        Box(modifier = Modifier.fillMaxSize()) {
+        Column(modifier = Modifier.fillMaxSize()) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Button(onClick = { viewModel.sortUsersByName() }) {
+                    Text("Sort by Name")
+                }
+                Button(onClick = { viewModel.sortUsersBySurname() }) {
+                    Text("Sort by Surname")
+                }
+            }
+
             LazyColumn(
                 contentPadding = PaddingValues(16.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
-                modifier = Modifier.fillMaxSize()
+                modifier = Modifier.weight(1f)
             ) {
                 items(users) { user ->
                     UserItem(
@@ -74,6 +91,16 @@ fun AdminUserAccountScreen(
                         }
                     )
                 }
+            }
+
+            // Add User Button
+            FloatingActionButton(
+                onClick = { showAddDialog = true },
+                modifier = Modifier
+                    .padding(16.dp)
+                    .align(Alignment.End)
+            ) {
+                Icon(imageVector = Icons.Default.Add, contentDescription = "Add")
             }
         }
 
@@ -105,6 +132,17 @@ fun AdminUserAccountScreen(
                 }
             )
         }
+
+        // Add User Dialog
+        if (showAddDialog) {
+            AddUserDialog(
+                onDismiss = { showAddDialog = false },
+                onSave = { newUser ->
+                    viewModel.registerWithEmailAndPassword(newUser.email, "default_password")
+                    showAddDialog = false
+                }
+            )
+        }
     }
 }
 
@@ -128,10 +166,7 @@ fun UserItem(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column {
-                Text(
-                    text = "${user.name} ${user.surname}",
-                    style = MaterialTheme.typography.bodyLarge
-                )
+                Text(text = "${user.name} ${user.surname}", style = MaterialTheme.typography.bodyLarge)
                 Text(text = user.email, style = MaterialTheme.typography.bodyMedium)
                 Text(text = user.role.toString(), style = MaterialTheme.typography.bodyMedium)
             }

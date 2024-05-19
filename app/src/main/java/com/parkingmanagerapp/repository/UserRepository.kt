@@ -123,13 +123,12 @@ class UserRepository @Inject constructor(
         }
     }
 
-    // Fetches all users as a list
+    // Fetch all users from Firestore
     suspend fun getAllUsers(): List<User> = withContext(ioDispatcher) {
         try {
             val usersSnapshot = db.collection("users").get().await()
             usersSnapshot.documents.mapNotNull { it.toObject(User::class.java) }
         } catch (e: Exception) {
-            Log.e("UserRepositoryError", "Error while fetching users list ${e.localizedMessage}")
             emptyList()
         }
     }

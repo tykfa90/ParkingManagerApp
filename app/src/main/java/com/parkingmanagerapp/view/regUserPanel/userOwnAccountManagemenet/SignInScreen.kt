@@ -1,4 +1,4 @@
-package com.parkingmanagerapp.view.regUserPanel
+package com.parkingmanagerapp.view.regUserPanel.userOwnAccountManagemenet
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -11,9 +11,10 @@ import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -33,42 +34,45 @@ import com.parkingmanagerapp.utility.Screen
 import com.parkingmanagerapp.viewModel.AuthViewModel
 
 @Composable
-fun RegisterScreen(
+fun SignInScreen(
     navController: NavController,
     viewModel: AuthViewModel = hiltViewModel(),
     snackbarHostState: SnackbarHostState
 ) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
-    var confirmPassword by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
-    var confirmPasswordVisible by remember { mutableStateOf(false) }
-    val signInStatus by viewModel.signInStatus.collectAsState()
-    val snackbarMessage by viewModel.snackbarMessage.collectAsState()
+    val signInStatus by viewModel.signInStatus.collectAsState(initial = null)
+    val snackbarMessage by viewModel.snackbarMessage.collectAsState(initial = null)
 
+    // React to snackbarMessage updates
     LaunchedEffect(snackbarMessage) {
         snackbarMessage?.let {
-            snackbarHostState.showSnackbar(it)
-            viewModel.clearSnackbarMessage()
+            snackbarHostState.showSnackbar(message = it)
+            viewModel.clearSnackbarMessage() // Clear message after showing
         }
     }
 
+    // Navigate upon sign-in status change
     LaunchedEffect(signInStatus) {
         if (signInStatus == true) {
             navController.navigate(Screen.Home.route) {
-                popUpTo("register") { inclusive = true }
+                popUpTo("sign_in") { inclusive = true }
             }
         }
     }
 
-    StandardScreenLayout(title = "Register", snackbarHostState = snackbarHostState) {
+    StandardScreenLayout(
+        title = "Sign In",
+        snackbarHostState = snackbarHostState
+    ) {
         Column(
             modifier = Modifier
-                .padding(horizontal = 16.dp)
+                .padding(16.dp)
                 .fillMaxWidth(),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            OutlinedTextField(
+            TextField(
                 value = email,
                 onValueChange = { email = it },
                 label = { Text("Email") },
@@ -78,56 +82,36 @@ fun RegisterScreen(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            OutlinedTextField(
+            TextField(
                 value = password,
                 onValueChange = { password = it },
                 label = { Text("Password") },
                 singleLine = true,
-                modifier = Modifier.fillMaxWidth(),
                 visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                 trailingIcon = {
-                    val icon =
-                        if (passwordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff
                     IconButton(onClick = { passwordVisible = !passwordVisible }) {
-                        Icon(imageVector = icon, contentDescription = "Toggle password visibility")
-                    }
-                }
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            OutlinedTextField(
-                value = confirmPassword,
-                onValueChange = { confirmPassword = it },
-                label = { Text("Confirm Password") },
-                singleLine = true,
-                modifier = Modifier.fillMaxWidth(),
-                visualTransformation = if (confirmPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-                trailingIcon = {
-                    val icon =
-                        if (confirmPasswordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff
-                    IconButton(onClick = { confirmPasswordVisible = !confirmPasswordVisible }) {
                         Icon(
-                            imageVector = icon,
-                            contentDescription = "Toggle confirm password visibility"
+                            imageVector = if (passwordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff,
+                            contentDescription = "Toggle password visibility"
                         )
                     }
-                }
+                },
+                modifier = Modifier.fillMaxWidth()
             )
 
             Spacer(modifier = Modifier.height(16.dp))
 
             Button(
-                onClick = {
-                    if (password == confirmPassword) {
-                        viewModel.registerWithEmailAndPassword(email, password)
-                    } else {
-                        viewModel.setSnackbarMessage("Passwords do not match")
-                    }
-                },
+                onClick = { viewModel.signIn(email, password) },
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text("Register")
+                Text("Sign In")
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            TextButton(onClick = { navController.navigate(Screen.Register.route) }) {
+                Text("Don't have an account? Register")
             }
         }
     }

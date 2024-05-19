@@ -1,4 +1,4 @@
-package com.parkingmanagerapp.view.adminPanel
+package com.parkingmanagerapp.view.adminPanel.userManagement
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.material3.AlertDialog
