@@ -10,6 +10,6 @@ sealed class Screen(val route: String) {
     data object UserProfile : Screen("user_profile")
     data object EditUserProfile : Screen("edit_user_profile")
     data object AdminMenu : Screen("admin_menu")
-    data object AdminMenuUserAccounts : Screen("admin_menu_user_accounts")
-    data object AdminParkingSlots : Screen("admin_parking_slots")
+    data object AdminMenuUserAccounts : Screen("admin_user_accounts")
+    data object AdminMenuParkingSlots : Screen("admin_parking_slots")
 }

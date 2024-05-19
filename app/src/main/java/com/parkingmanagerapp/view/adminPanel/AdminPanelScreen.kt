@@ -31,10 +31,10 @@ fun AdminPanelScreen(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Button(
-                onClick = { navController.navigate(Screen.AdminParkingSlots.route) },
+                onClick = { navController.navigate(Screen.AdminMenuParkingSlots.route) },
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text("Manage Parking Slots (placeholder)")
+                Text("Manage Parking Slots")
             }
 
             Spacer(modifier = Modifier.height(16.dp))

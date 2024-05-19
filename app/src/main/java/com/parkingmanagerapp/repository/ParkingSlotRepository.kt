@@ -18,6 +18,7 @@ class ParkingSlotRepository @Inject constructor(
             parkingSlotCollection.add(parkingSlot).await()
             Result.success(Unit)
         } catch (e: Exception) {
+            Log.e("ParkingSlotError", "Error while adding parking slot ${e.localizedMessage}")
             Result.failure(e)
         }
     }
@@ -35,7 +36,7 @@ class ParkingSlotRepository @Inject constructor(
 
         parkingSlots
     } catch (e: Exception) {
-        Log.e("ParkingSlotError", "Error fetching parking slots", e)
+        Log.e("ParkingSlotError", "Error while fetching parking slots ${e.localizedMessage}")
         emptyList()
     }
 
@@ -45,6 +46,7 @@ class ParkingSlotRepository @Inject constructor(
                 .set(updatedSlot).await()
             Result.success(Unit)
         } catch (e: Exception) {
+            Log.e("ParkingSlotError", "Error while updating parking slot ${e.localizedMessage}")
             Result.failure(e)
         }
     }
@@ -55,6 +57,7 @@ class ParkingSlotRepository @Inject constructor(
                 .delete().await()
             Result.success(Unit)
         } catch (e: Exception) {
+            Log.e("ParkingSlotError", "Error while deleting parking slot ${e.localizedMessage}")
             Result.failure(e)
         }
     }

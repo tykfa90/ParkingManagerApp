@@ -106,18 +106,40 @@ class UserRepository @Inject constructor(
                 ).await()
             true
         } catch (e: Exception) {
-            Log.e("UserRepository", "Error updating user details: ${e.localizedMessage}")
+            Log.e("UserRepository", "Error while updating user details: ${e.localizedMessage}")
             false
         }
     }
 
+    // Updates the user role (admin level only)
     suspend fun updateUserRole(userId: String, newRole: UserRole): Boolean = withContext(ioDispatcher) {
         try {
             db.collection("users").document(userId)
                 .update("role", newRole.toString()).await()
             true
         } catch (e: Exception) {
-            Log.e("UserRepository", "Error updating user role: ${e.localizedMessage}")
+            Log.e("UserRepository", "Error while updating user role: ${e.localizedMessage}")
+            false
+        }
+    }
+
+    // Fetches all users as a list
+    suspend fun getAllUsers(): List<User> = withContext(ioDispatcher) {
+        try {
+            val usersSnapshot = db.collection("users").get().await()
+            usersSnapshot.documents.mapNotNull { it.toObject(User::class.java) }
+        } catch (e: Exception) {
+            Log.e("UserRepositoryError", "Error while fetching users list ${e.localizedMessage}")
+            emptyList()
+        }
+    }
+
+    suspend fun deleteUser(userId: String): Boolean = withContext(ioDispatcher) {
+        try {
+            db.collection("users").document(userId).delete().await()
+            true
+        } catch (e: Exception) {
+            Log.e("UserRepositoryError", "Error while deleting user account ${e.localizedMessage}")
             false
         }
     }

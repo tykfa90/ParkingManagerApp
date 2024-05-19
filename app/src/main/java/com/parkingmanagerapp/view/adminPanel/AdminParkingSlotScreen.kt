@@ -94,9 +94,9 @@ fun AdminParkingSlotScreen(
             )
         }
 
-        // Delete Confirmation Dialog
+        // Delete user confirmation dialog
         if (showDeleteDialog && selectedSlot != null) {
-            DeleteConfirmationDialog(
+            DeleteParkingSlotConfirmationDialog(
                 parkingSlot = selectedSlot!!,
                 onDismiss = { showDeleteDialog = false },
                 onConfirm = {
@@ -141,29 +141,6 @@ fun EditParkingSlotDialog(
                 onSave(parkingSlot.copy(slotLabel = slotLabel, isOccupied = isOccupied))
             }) {
                 Text("Save")
-            }
-        },
-        dismissButton = {
-            Button(onClick = onDismiss) {
-                Text("Cancel")
-            }
-        }
-    )
-}
-
-@Composable
-fun DeleteConfirmationDialog(
-    parkingSlot: ParkingSlot,
-    onDismiss: () -> Unit,
-    onConfirm: () -> Unit
-) {
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text(text = "Delete Parking Slot") },
-        text = { Text(text = "Are you sure you want to delete this parking slot?") },
-        confirmButton = {
-            Button(onClick = onConfirm) {
-                Text("Delete")
             }
         },
         dismissButton = {

@@ -8,7 +8,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.parkingmanagerapp.view.TestMenuScreen
 import com.parkingmanagerapp.view.adminPanel.AdminPanelScreen
-import com.parkingmanagerapp.view.adminPanel.AdminParkingSlotScreen
+import com.parkingmanagerapp.view.adminPanel.AdminUserAccountScreen
 import com.parkingmanagerapp.view.regUserPanel.EditUserProfileScreen
 import com.parkingmanagerapp.view.regUserPanel.MainMenuScreen
 import com.parkingmanagerapp.view.regUserPanel.ParkingSlotScreen
@@ -17,7 +17,6 @@ import com.parkingmanagerapp.view.regUserPanel.SignInScreen
 import com.parkingmanagerapp.view.regUserPanel.SplashScreen
 import com.parkingmanagerapp.view.regUserPanel.UserProfileScreen
 
-// Handling navigation inside the application
 @Composable
 fun AppNavHost(navController: NavHostController, snackbarHostState: SnackbarHostState) {
     NavHost(navController = navController, startDestination = Screen.SplashScreen.route) {
@@ -55,13 +54,7 @@ fun AppNavHost(navController: NavHostController, snackbarHostState: SnackbarHost
             )
         }
         composable(Screen.AdminMenuUserAccounts.route) {
-            AdminPanelScreen(
-                navController,
-                snackbarHostState = snackbarHostState
-            )
-        }
-        composable(Screen.AdminParkingSlots.route) {
-            AdminParkingSlotScreen(
+            AdminUserAccountScreen(
                 navController,
                 snackbarHostState = snackbarHostState
             )

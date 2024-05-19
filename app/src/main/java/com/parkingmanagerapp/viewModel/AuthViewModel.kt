@@ -24,9 +24,20 @@ class AuthViewModel @Inject constructor(private val userRepository: UserReposito
     private val _snackbarMessage = MutableStateFlow<String?>(null)
     val snackbarMessage = _snackbarMessage.asStateFlow()
 
+    // List of all users for admin management
+    private val _users = MutableStateFlow<List<User>>(emptyList())
+    val users = _users.asStateFlow()
+
     init {
         // Check if a user is logged in when ViewModel is created
         checkAuthenticationState()
+    }
+
+    // Fetch all users for admin management
+    fun fetchAllUsers() {
+        viewModelScope.launch {
+            _users.value = userRepository.getAllUsers()
+        }
     }
 
     // Signs in the user, using the basic e-mail + password method
@@ -128,6 +139,18 @@ class AuthViewModel @Inject constructor(private val userRepository: UserReposito
                 }
             } else {
                 _snackbarMessage.value = "Unauthorized to update roles."
+            }
+        }
+    }
+
+    // Deletes the specific user by user ID
+    fun deleteUser(userId: String) {
+        viewModelScope.launch {
+            if (userRepository.deleteUser(userId)) {
+                fetchAllUsers()
+                _snackbarMessage.value = "User deleted successfully."
+            } else {
+                _snackbarMessage.value = "Failed to delete user."
             }
         }
     }
