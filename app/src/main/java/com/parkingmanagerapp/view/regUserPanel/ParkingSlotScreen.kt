@@ -15,10 +15,12 @@ fun ParkingSlotScreen(
     viewModel: ParkingSlotViewModel = hiltViewModel(),
     snackbarHostState: SnackbarHostState
 ) {
+    viewModel.setViewingContextAsAdmin(false)
     val parkingSlots by viewModel.parkingSlots.collectAsState()
 
     ListScreenLayout(
         listItems = parkingSlots,
+        isAdminContext = false, // Regular users cannot edit or delete
         onEdit = {}, // No-op for regular users
         onDelete = {} // No-op for regular users
     )

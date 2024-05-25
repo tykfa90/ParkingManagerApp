@@ -15,7 +15,7 @@ fun DeleteParkingSlotConfirmationDialog(
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text(text = "Delete Parking Slot") },
-        text = { Text(text = "Are you sure you want to delete ${parkingSlot.slotLabel}?") },
+        text = { Text(text = "Are you sure you want to delete this parking slot?") },
         confirmButton = {
             Button(onClick = onConfirm) {
                 Text("Delete")

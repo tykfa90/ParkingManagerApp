@@ -166,7 +166,10 @@ fun UserItem(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column {
-                Text(text = "${user.name} ${user.surname}", style = MaterialTheme.typography.bodyLarge)
+                Text(
+                    text = "${user.name} ${user.surname}",
+                    style = MaterialTheme.typography.bodyLarge
+                )
                 Text(text = user.email, style = MaterialTheme.typography.bodyMedium)
                 Text(text = user.role.toString(), style = MaterialTheme.typography.bodyMedium)
             }

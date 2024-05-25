@@ -1,4 +1,4 @@
-package com.parkingmanagerapp.view.adminPanel
+package com.parkingmanagerapp.view.adminPanel.parkingSlotManagement
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -51,13 +51,7 @@ fun EditParkingSlotDialog(
         },
         confirmButton = {
             Button(onClick = {
-                onSave(
-                    parkingSlot.copy(
-                        slotLabel = slotLabel,
-                        isOccupied = isOccupied,
-                        annotation = annotation
-                    )
-                )
+                onSave(parkingSlot.copy(slotLabel = slotLabel, isOccupied = isOccupied, annotation = annotation))
             }) {
                 Text("Save")
             }
