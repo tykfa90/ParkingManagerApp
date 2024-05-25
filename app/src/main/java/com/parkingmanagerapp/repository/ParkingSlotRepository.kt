@@ -13,10 +13,12 @@ class ParkingSlotRepository @Inject constructor(
 ) {
     private val parkingSlotCollection = db.collection("parkingSlots")
 
-    // Adds parking slot to the database
+    // Adds parking slot to the database and assigns the document ID as the slotID
     suspend fun addParkingSlot(parkingSlot: ParkingSlot): Result<Unit> {
         return try {
-            parkingSlotCollection.add(parkingSlot).await()
+            val documentRef = parkingSlotCollection.add(parkingSlot).await()
+            val documentId = documentRef.id
+            parkingSlotCollection.document(documentId).update("slotID", documentId).await()
             Result.success(Unit)
         } catch (e: Exception) {
             Log.e("ParkingSlotRepository", "Error while adding new parking slot: ${e.localizedMessage}")
@@ -31,9 +33,7 @@ class ParkingSlotRepository @Inject constructor(
             .await()
             .documents
             .mapNotNull { document ->
-                document.toObject(ParkingSlot::class.java)?.apply {
-                    slotID = document.id // Set the slotID from the document ID
-                }
+                document.toObject(ParkingSlot::class.java)
             }
 
         parkingSlots
