@@ -18,7 +18,7 @@ class UserRepository @Inject constructor(
     private val ioDispatcher: CoroutineContext
 ) {
 
-    // Function to sign in a user and fetch their details
+    // Signs-in a user and fetch their details
     suspend fun signInUser(email: String, password: String): User? = withContext(ioDispatcher) {
         try {
             val result = auth.signInWithEmailAndPassword(email, password).await()
@@ -33,27 +33,27 @@ class UserRepository @Inject constructor(
         }
     }
 
-    // Function to sign up a new user, set their role to "regular", and store user details
+    // Registers a new user, sets their role to "regular", and stores user details
     suspend fun registerNewUser(user: User, password: String): Boolean = withContext(ioDispatcher) {
         try {
             val result = auth.createUserWithEmailAndPassword(user.email, password).await()
             val firebaseUser = result.user ?: return@withContext false
 
-            // Assign the UID from the newly created Firebase user to your User object
+            // Assigns the UID from the newly created Firebase user to your User object
             val newUser = user.copy(uid = firebaseUser.uid)
 
-            // Update the database with the User object that now includes the UID
+            // Updates the database with the User object that now includes the UID
             db.collection("users").document(newUser.uid)
                 .set(newUser.toMap()).await()
             true
         } catch (e: Exception) {
-            // Logging the error for more clear debug
+            // Logs the error for more clear debug
             Log.e("UserRepository", "Error while registering new user: ${e.localizedMessage}")
             false
         }
     }
 
-    // Additional method in User class to convert it to a map for Firestore
+    // Helper method for converting User object into Firestore-friendly format
     private fun User.toMap(): Map<String, Any> {
         return mapOf(
             "name" to name,
@@ -64,7 +64,7 @@ class UserRepository @Inject constructor(
         )
     }
 
-    // Function to sign-out the current user
+    // Signs-out the current user
     suspend fun signOutUser() = withContext(ioDispatcher) {
         auth.signOut()
     }
@@ -73,11 +73,11 @@ class UserRepository @Inject constructor(
     suspend fun getCurrentUser(): User? = withContext(ioDispatcher) {
         val firebaseUser = FirebaseAuth.getInstance().currentUser ?: return@withContext null
         try {
-            // Attempt to fetch the user document from Firestore using the UID
+            // Attempts to fetch the user document from Firestore using the UID
             val docSnapshot = db.collection("users").document(firebaseUser.uid).get().await()
             val role = UserRole.valueOf(docSnapshot.getString("role") ?: "REGULAR")
 
-            // Create and return the User object with details fetched from Firestore
+            // Creates and return the User object with details fetched from Firestore
             return@withContext User(
                 uid = firebaseUser.uid,
                 name = docSnapshot.getString("name") ?: "",
@@ -87,7 +87,6 @@ class UserRepository @Inject constructor(
                 role = role
             )
         } catch (e: Exception) {
-            // Handle any errors that might occur during Firestore access
             e.printStackTrace()
             Log.e("UserRepository", "Error while fetching current user: ${e.localizedMessage}")
             return@withContext null
@@ -123,7 +122,7 @@ class UserRepository @Inject constructor(
         }
     }
 
-    // Fetch all users from Firestore
+    // Fetches all users from Firestore
     suspend fun getAllUsers(): List<User> = withContext(ioDispatcher) {
         try {
             val usersSnapshot = db.collection("users").get().await()
@@ -134,6 +133,7 @@ class UserRepository @Inject constructor(
         }
     }
 
+    // Deletes the user from database
     suspend fun deleteUser(userId: String): Boolean = withContext(ioDispatcher) {
         try {
             db.collection("users").document(userId).delete().await()

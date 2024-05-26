@@ -51,7 +51,14 @@ fun EditParkingSlotDialog(
         },
         confirmButton = {
             Button(onClick = {
-                onSave(parkingSlot.copy(slotLabel = slotLabel, isOccupied = isOccupied, annotation = annotation))
+                onSave(
+                    parkingSlot.copy(
+                        slotLabel = slotLabel,
+                        isOccupied = isOccupied,
+                        annotation = annotation
+                    )
+                )
+                onDismiss()
             }) {
                 Text("Save")
             }
