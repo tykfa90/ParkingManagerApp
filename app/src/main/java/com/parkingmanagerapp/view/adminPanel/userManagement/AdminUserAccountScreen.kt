@@ -98,10 +98,10 @@ fun AdminUserAccountScreen(
                 onDismiss = { showEditDialog = false },
                 onSave = { updatedUser ->
                     viewModel.updateUserProfile(
-                        updatedUser.name,
-                        updatedUser.surname,
-                        updatedUser.phoneNumber,
-                        updatedUser.email
+                        name = updatedUser.name,
+                        surname = updatedUser.surname,
+                        phoneNumber = updatedUser.phoneNumber,
+                        email = updatedUser.email
                     )
                     showEditDialog = false
                 }
@@ -114,7 +114,7 @@ fun AdminUserAccountScreen(
                 user = selectedUser!!,
                 onDismiss = { showDeleteDialog = false },
                 onConfirm = {
-                    viewModel.deleteUser(selectedUser!!.uID)
+                    viewModel.deleteUser(selectedUser!!.uid)
                     showDeleteDialog = false
                 }
             )

@@ -36,7 +36,12 @@ class AuthViewModel @Inject constructor(private val userRepository: UserReposito
     // Fetches all users for admin management
     fun fetchAllUsers() {
         viewModelScope.launch {
-            _users.value = userRepository.getAllUsers()
+            try {
+                val userList = userRepository.getAllUsers()
+                _users.value = userList
+            } catch (e: Exception) {
+                _snackbarMessage.value = "Error fetching users: ${e.localizedMessage}"
+            }
         }
     }
 
@@ -67,16 +72,10 @@ class AuthViewModel @Inject constructor(private val userRepository: UserReposito
 
     // Registers a new user in the FirebaseAuth database. After generating uid,
     // passes over the newUser account with additional data to the Firebase Firestore
-    fun registerWithEmailAndPassword(
-        email: String,
-        password: String
-    ) {
+    fun registerWithEmailAndPassword(email: String, password: String, name: String) {
         viewModelScope.launch {
             val newUser = User(
-                uID = "",
-                name = "",
-                surname = "",
-                phoneNumber = "",
+                name = name,
                 email = email,
                 role = UserRole.REGULAR // Defaults all new accounts to REGULAR type account
             )
@@ -130,8 +129,14 @@ class AuthViewModel @Inject constructor(private val userRepository: UserReposito
     ) {
         viewModelScope.launch {
             // Fetch current user's role and reservations to preserve them in the update
-            val updatedUser = _user.value?.copy(name = name, surname = surname, phoneNumber = phoneNumber, email = email)
-            if (updatedUser != null && userRepository.updateUserDetails(updatedUser)) {
+            val currentUser = _user.value ?: return@launch
+            val updatedUser = currentUser.copy(
+                name = name,
+                surname = surname,
+                phoneNumber = phoneNumber,
+                email = email
+            )
+            if (userRepository.updateUserDetails(updatedUser)) {
                 _user.value = updatedUser
                 _snackbarMessage.value = "Profile updated successfully."
             } else {

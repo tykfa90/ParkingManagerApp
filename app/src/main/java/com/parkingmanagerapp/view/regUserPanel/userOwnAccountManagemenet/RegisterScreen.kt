@@ -38,6 +38,7 @@ fun RegisterScreen(
     viewModel: AuthViewModel = hiltViewModel(),
     snackbarHostState: SnackbarHostState
 ) {
+    var name by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
@@ -68,6 +69,16 @@ fun RegisterScreen(
                 .fillMaxWidth(),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            OutlinedTextField(
+                value = name,
+                onValueChange = { name = it },
+                label = { Text("Name") },
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
             OutlinedTextField(
                 value = email,
                 onValueChange = { email = it },
@@ -120,7 +131,7 @@ fun RegisterScreen(
             Button(
                 onClick = {
                     if (password == confirmPassword) {
-                        viewModel.registerWithEmailAndPassword(email, password)
+                        viewModel.registerWithEmailAndPassword(email, password, name)
                     } else {
                         viewModel.setSnackbarMessage("Passwords do not match")
                     }

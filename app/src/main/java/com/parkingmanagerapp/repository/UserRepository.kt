@@ -2,6 +2,7 @@ package com.parkingmanagerapp.repository
 
 import android.util.Log
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.ktx.userProfileChangeRequest
 import com.google.firebase.firestore.FirebaseFirestore
 import com.parkingmanagerapp.model.User
 import com.parkingmanagerapp.model.UserRole
@@ -18,7 +19,7 @@ class UserRepository @Inject constructor(
     private val ioDispatcher: CoroutineContext
 ) {
 
-    // Signs-in a user and fetch their details
+    // Signs-in the user using Firebase Auth service
     suspend fun signInUser(email: String, password: String): User? = withContext(ioDispatcher) {
         try {
             val result = auth.signInWithEmailAndPassword(email, password).await()
@@ -26,83 +27,95 @@ class UserRepository @Inject constructor(
             val userId = firebaseUser.uid
             val docSnapshot = db.collection("users").document(userId).get().await()
             val role = UserRole.valueOf(docSnapshot.getString("role") ?: "REGULAR")
-            User.fromFirebaseUser(firebaseUser, role)
+            User(
+                uid = userId,
+                name = firebaseUser.displayName ?: "",
+                surname = docSnapshot.getString("surname") ?: "",
+                phoneNumber = firebaseUser.phoneNumber ?: "",
+                email = firebaseUser.email ?: "",
+                role = role
+            )
         } catch (e: Exception) {
             Log.e("UserRepository", "Error while signing in user: ${e.localizedMessage}")
             null
         }
     }
 
-    // Registers a new user, sets their role to "regular", and stores user details
+    // Registers new user in Firebase Auth, then stores additional information in Firebase
     suspend fun registerNewUser(user: User, password: String): Boolean = withContext(ioDispatcher) {
         try {
             val result = auth.createUserWithEmailAndPassword(user.email, password).await()
             val firebaseUser = result.user ?: return@withContext false
 
-            // Assigns the UID from the newly created Firebase user to your User object
-            val newUser = user.copy(uID = firebaseUser.uid)
+            val profileUpdates = userProfileChangeRequest {
+                displayName = user.name
+            }
+            firebaseUser.updateProfile(profileUpdates).await()
 
-            // Updates the database with the User object that now includes the UID
-            db.collection("users").document(newUser.uID)
-                .set(newUser.toMap()).await()
+            val newUser = user.copy(uid = firebaseUser.uid)
+
+            // Save additional attributes to Firestore
+            db.collection("users").document(newUser.uid).set(newUser.toMap()).await()
             true
         } catch (e: Exception) {
-            // Logs the error for more clear debug
             Log.e("UserRepository", "Error while registering new user: ${e.localizedMessage}")
             false
         }
     }
 
-    // Helper method for converting User object into Firestore-friendly format
     private fun User.toMap(): Map<String, Any> {
         return mapOf(
-            "name" to name,
             "surname" to surname,
-            "phoneNumber" to phoneNumber,
-            "email" to email,
             "role" to role.toString()
         )
     }
 
-    // Signs-out the current user
+    // Signs-out the active user
     suspend fun signOutUser() = withContext(ioDispatcher) {
         auth.signOut()
     }
 
-    // Reads currently active user information from database
+    // Fetches a user by the uid
     suspend fun getCurrentUser(): User? = withContext(ioDispatcher) {
         val firebaseUser = FirebaseAuth.getInstance().currentUser ?: return@withContext null
         try {
-            // Attempts to fetch the user document from Firestore using the UID
             val docSnapshot = db.collection("users").document(firebaseUser.uid).get().await()
             val role = UserRole.valueOf(docSnapshot.getString("role") ?: "REGULAR")
-
-            // Creates and return the User object with details fetched from Firestore
-            return@withContext User(
-                uID = firebaseUser.uid,
-                name = docSnapshot.getString("name") ?: "",
+            User(
+                uid = firebaseUser.uid,
+                name = firebaseUser.displayName ?: "",
                 surname = docSnapshot.getString("surname") ?: "",
-                phoneNumber = docSnapshot.getString("phoneNumber") ?: "",
+                phoneNumber = firebaseUser.phoneNumber ?: "",
                 email = firebaseUser.email ?: "",
                 role = role
             )
         } catch (e: Exception) {
             e.printStackTrace()
             Log.e("UserRepository", "Error while fetching current user: ${e.localizedMessage}")
-            return@withContext null
+            null
         }
     }
 
-    // Updates user data/details
+    // Updates user's account details
     suspend fun updateUserDetails(user: User): Boolean = withContext(ioDispatcher) {
         try {
-            db.collection("users").document(user.uID)
+            // Update additional attributes in Firestore
+            db.collection("users").document(user.uid)
                 .update(
-                    "name", user.name,
                     "surname", user.surname,
-                    "phoneNumber", user.phoneNumber,
-                    "email", user.email
+                    "role", user.role.toString()
                 ).await()
+
+            // Update Firebase Auth user attributes
+            val firebaseUser = auth.currentUser
+            val profileUpdates = userProfileChangeRequest {
+                displayName = user.name
+            }
+            firebaseUser?.updateProfile(profileUpdates)?.await()
+            firebaseUser?.updateEmail(user.email)?.await()
+            // Note: Updating phone number requires re-authentication
+            // firebaseUser?.updatePhoneNumber(user.phoneNumber)?.await()
+
             true
         } catch (e: Exception) {
             Log.e("UserRepository", "Error while updating user details: ${e.localizedMessage}")
@@ -110,30 +123,34 @@ class UserRepository @Inject constructor(
         }
     }
 
-    // Updates the user role (admin level only)
-    suspend fun updateUserRole(userId: String, newRole: UserRole): Boolean = withContext(ioDispatcher) {
-        try {
-            db.collection("users").document(userId)
-                .update("role", newRole.toString()).await()
-            true
-        } catch (e: Exception) {
-            Log.e("UserRepository", "Error while updating user role: ${e.localizedMessage}")
-            false
+    // Updates user's role. Usable only by ADMIN level accounts
+    suspend fun updateUserRole(userId: String, newRole: UserRole): Boolean =
+        withContext(ioDispatcher) {
+            try {
+                db.collection("users").document(userId)
+                    .update("role", newRole.toString()).await()
+                true
+            } catch (e: Exception) {
+                Log.e("UserRepository", "Error while updating user role: ${e.localizedMessage}")
+                false
+            }
         }
-    }
 
-    // Fetches all users from Firestore
+    // Fetches a list of all registered users
     suspend fun getAllUsers(): List<User> = withContext(ioDispatcher) {
         try {
             val usersSnapshot = db.collection("users").get().await()
-            usersSnapshot.documents.mapNotNull { it.toObject(User::class.java) }
+            usersSnapshot.documents.mapNotNull { doc ->
+                val user = doc.toObject(User::class.java)
+                user?.apply { uid = doc.id }
+            }
         } catch (e: Exception) {
             Log.e("UserRepository", "Error while fetching all user accounts: ${e.localizedMessage}")
             emptyList()
         }
     }
 
-    // Deletes the user from database
+    // Deletes a specified user account entirely
     suspend fun deleteUser(userId: String): Boolean = withContext(ioDispatcher) {
         try {
             db.collection("users").document(userId).delete().await()
