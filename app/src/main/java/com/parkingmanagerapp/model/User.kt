@@ -1,18 +1,18 @@
 package com.parkingmanagerapp.model
 
 data class User(
-    var uid: String,
-    var name: String,
-    var surname: String,
-    var phoneNumber: String,
-    var email: String,
-    var role: UserRole
+    var uID: String = "",
+    var name: String = "",
+    var surname: String = "",
+    var phoneNumber: String = "",
+    var email: String = "",
+    var role: UserRole = UserRole.REGULAR
 ) {
     companion object {
-        fun fromFirebaseUser(firebaseUser: com.google.firebase.auth.FirebaseUser, role: UserRole = UserRole.REGULAR): User {
+        fun fromFirebaseUser(firebaseUser: com.google.firebase.auth.FirebaseUser, role: UserRole): User {
             return User(
-                uid = firebaseUser.uid,
-                name = "",
+                uID = firebaseUser.uid,
+                name = firebaseUser.displayName ?: "",
                 surname = "",
                 phoneNumber = firebaseUser.phoneNumber ?: "",
                 email = firebaseUser.email ?: "",

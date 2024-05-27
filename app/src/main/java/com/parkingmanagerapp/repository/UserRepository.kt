@@ -40,10 +40,10 @@ class UserRepository @Inject constructor(
             val firebaseUser = result.user ?: return@withContext false
 
             // Assigns the UID from the newly created Firebase user to your User object
-            val newUser = user.copy(uid = firebaseUser.uid)
+            val newUser = user.copy(uID = firebaseUser.uid)
 
             // Updates the database with the User object that now includes the UID
-            db.collection("users").document(newUser.uid)
+            db.collection("users").document(newUser.uID)
                 .set(newUser.toMap()).await()
             true
         } catch (e: Exception) {
@@ -79,10 +79,10 @@ class UserRepository @Inject constructor(
 
             // Creates and return the User object with details fetched from Firestore
             return@withContext User(
-                uid = firebaseUser.uid,
+                uID = firebaseUser.uid,
                 name = docSnapshot.getString("name") ?: "",
                 surname = docSnapshot.getString("surname") ?: "",
-                phoneNumber = firebaseUser.phoneNumber ?: "",
+                phoneNumber = docSnapshot.getString("phoneNumber") ?: "",
                 email = firebaseUser.email ?: "",
                 role = role
             )
@@ -96,7 +96,7 @@ class UserRepository @Inject constructor(
     // Updates user data/details
     suspend fun updateUserDetails(user: User): Boolean = withContext(ioDispatcher) {
         try {
-            db.collection("users").document(user.uid)
+            db.collection("users").document(user.uID)
                 .update(
                     "name", user.name,
                     "surname", user.surname,

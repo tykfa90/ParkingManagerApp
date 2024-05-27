@@ -29,23 +29,23 @@ class AuthViewModel @Inject constructor(private val userRepository: UserReposito
     val users = _users.asStateFlow()
 
     init {
-        // Check if a user is logged in when ViewModel is created
+        // Checks if a user is logged in when ViewModel is created
         checkAuthenticationState()
     }
 
-    // Fetch all users for admin management
+    // Fetches all users for admin management
     fun fetchAllUsers() {
         viewModelScope.launch {
             _users.value = userRepository.getAllUsers()
         }
     }
 
-    // Sort users by name
+    // Sorts users by name
     fun sortUsersByName() {
         _users.value = _users.value.sortedBy { it.name }
     }
 
-    // Sort users by surname
+    // Sorts users by surname
     fun sortUsersBySurname() {
         _users.value = _users.value.sortedBy { it.surname }
     }
@@ -73,7 +73,7 @@ class AuthViewModel @Inject constructor(private val userRepository: UserReposito
     ) {
         viewModelScope.launch {
             val newUser = User(
-                uid = "",
+                uID = "",
                 name = "",
                 surname = "",
                 phoneNumber = "",
@@ -95,6 +95,7 @@ class AuthViewModel @Inject constructor(private val userRepository: UserReposito
         }
     }
 
+    // Signs-out the currently active user
     fun signOut() {
         viewModelScope.launch {
             userRepository.signOutUser()
@@ -104,6 +105,7 @@ class AuthViewModel @Inject constructor(private val userRepository: UserReposito
         }
     }
 
+    // Verifies whether there is an active user that is correctly authenticated within the application
     private fun checkAuthenticationState() {
         viewModelScope.launch {
             _user.value = userRepository.getCurrentUser()

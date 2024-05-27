@@ -46,7 +46,6 @@ fun AdminUserAccountScreen(
     var selectedUser by remember { mutableStateOf<User?>(null) }
     var showEditDialog by remember { mutableStateOf(false) }
     var showDeleteDialog by remember { mutableStateOf(false) }
-    var showAddDialog by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
         viewModel.fetchAllUsers()
@@ -115,7 +114,7 @@ fun AdminUserAccountScreen(
                 user = selectedUser!!,
                 onDismiss = { showDeleteDialog = false },
                 onConfirm = {
-                    viewModel.deleteUser(selectedUser!!.uid)
+                    viewModel.deleteUser(selectedUser!!.uID)
                     showDeleteDialog = false
                 }
             )
