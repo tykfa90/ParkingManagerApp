@@ -66,7 +66,8 @@ class UserRepository @Inject constructor(
     private fun User.toMap(): Map<String, Any> {
         return mapOf(
             "surname" to surname,
-            "role" to role.toString()
+            "role" to role.toString(),
+            "phoneNumber" to phoneNumber
         )
     }
 
@@ -77,7 +78,7 @@ class UserRepository @Inject constructor(
 
     // Fetches a user by the uid
     suspend fun getCurrentUser(): User? = withContext(ioDispatcher) {
-        val firebaseUser = FirebaseAuth.getInstance().currentUser ?: return@withContext null
+        val firebaseUser = auth.currentUser ?: return@withContext null
         try {
             val docSnapshot = db.collection("users").document(firebaseUser.uid).get().await()
             val role = UserRole.valueOf(docSnapshot.getString("role") ?: "REGULAR")
@@ -103,7 +104,8 @@ class UserRepository @Inject constructor(
             db.collection("users").document(user.uid)
                 .update(
                     "surname", user.surname,
-                    "role", user.role.toString()
+                    "role", user.role.toString(),
+                    "phoneNumber", user.phoneNumber
                 ).await()
 
             // Update Firebase Auth user attributes
@@ -113,7 +115,7 @@ class UserRepository @Inject constructor(
             }
             firebaseUser?.updateProfile(profileUpdates)?.await()
             firebaseUser?.updateEmail(user.email)?.await()
-            // Note: Updating phone number requires re-authentication
+            TODO("Implement re-authentication required to update the phone number.")
             // firebaseUser?.updatePhoneNumber(user.phoneNumber)?.await()
 
             true
@@ -122,19 +124,6 @@ class UserRepository @Inject constructor(
             false
         }
     }
-
-    // Updates user's role. Usable only by ADMIN level accounts
-    suspend fun updateUserRole(userId: String, newRole: UserRole): Boolean =
-        withContext(ioDispatcher) {
-            try {
-                db.collection("users").document(userId)
-                    .update("role", newRole.toString()).await()
-                true
-            } catch (e: Exception) {
-                Log.e("UserRepository", "Error while updating user role: ${e.localizedMessage}")
-                false
-            }
-        }
 
     // Fetches a list of all registered users
     suspend fun getAllUsers(): List<User> = withContext(ioDispatcher) {

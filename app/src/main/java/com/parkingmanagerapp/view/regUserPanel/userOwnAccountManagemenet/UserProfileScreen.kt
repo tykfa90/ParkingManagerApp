@@ -46,6 +46,7 @@ fun UserProfileScreen(
             Text("Name: ${user?.name}")
             Text("Surname: ${user?.surname}")
             Text("Email: ${user?.email}")
+            Text("Phone Number: ${user?.phoneNumber}")
             Text("User access level: ${user?.role}")
             Button(onClick = {
                 showEditDialog = true

@@ -27,6 +27,7 @@ import com.parkingmanagerapp.model.User
 import com.parkingmanagerapp.ui.theme.StandardScreenLayout
 import com.parkingmanagerapp.viewModel.AuthViewModel
 
+@Suppress("UNUSED_PARAMETER")
 @Composable
 fun AdminUserAccountScreen(
     navController: NavController,

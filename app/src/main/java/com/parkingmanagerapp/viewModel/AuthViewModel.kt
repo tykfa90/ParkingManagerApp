@@ -145,21 +145,6 @@ class AuthViewModel @Inject constructor(private val userRepository: UserReposito
         }
     }
 
-    // Updates user role. Usage limited strictly to ADMIN level accounts
-    fun updateUserRole(targetUserId: String, newRole: UserRole) {
-        viewModelScope.launch {
-            if (_user.value?.role == UserRole.ADMIN) {
-                if (userRepository.updateUserRole(targetUserId, newRole)) {
-                    _snackbarMessage.value = "User role updated successfully."
-                } else {
-                    _snackbarMessage.value = "Failed to update user role."
-                }
-            } else {
-                _snackbarMessage.value = "Unauthorized to update roles."
-            }
-        }
-    }
-
     // Deletes the specific user by user ID
     fun deleteUser(userId: String) {
         viewModelScope.launch {
