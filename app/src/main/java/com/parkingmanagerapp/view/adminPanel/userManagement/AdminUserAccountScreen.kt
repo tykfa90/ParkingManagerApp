@@ -9,15 +9,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -27,7 +19,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -44,7 +35,6 @@ fun AdminUserAccountScreen(
 ) {
     val users by viewModel.users.collectAsState()
     var selectedUser by remember { mutableStateOf<User?>(null) }
-    var showEditDialog by remember { mutableStateOf(false) }
     var showDeleteDialog by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
@@ -78,10 +68,6 @@ fun AdminUserAccountScreen(
                 items(users) { user ->
                     UserItem(
                         user = user,
-                        onEdit = {
-                            selectedUser = user
-                            showEditDialog = true
-                        },
                         onDelete = {
                             selectedUser = user
                             showDeleteDialog = true
@@ -89,23 +75,6 @@ fun AdminUserAccountScreen(
                     )
                 }
             }
-        }
-
-        // Edit User Dialog
-        if (showEditDialog && selectedUser != null) {
-            EditUserDialog(
-                user = selectedUser!!,
-                onDismiss = { showEditDialog = false },
-                onSave = { updatedUser ->
-                    viewModel.updateUserProfile(
-                        name = updatedUser.name,
-                        surname = updatedUser.surname,
-                        phoneNumber = updatedUser.phoneNumber,
-                        email = updatedUser.email
-                    )
-                    showEditDialog = false
-                }
-            )
         }
 
         // Delete Confirmation Dialog
@@ -118,45 +87,6 @@ fun AdminUserAccountScreen(
                     showDeleteDialog = false
                 }
             )
-        }
-    }
-}
-
-@Composable
-fun UserItem(
-    user: User,
-    onEdit: () -> Unit,
-    onDelete: () -> Unit
-) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(8.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
-    ) {
-        Row(
-            modifier = Modifier
-                .padding(16.dp)
-                .fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Column {
-                Text(
-                    text = "${user.name} ${user.surname}",
-                    style = MaterialTheme.typography.bodyLarge
-                )
-                Text(text = user.email, style = MaterialTheme.typography.bodyMedium)
-                Text(text = user.role.toString(), style = MaterialTheme.typography.bodyMedium)
-            }
-            Row {
-                IconButton(onClick = onEdit) {
-                    Icon(imageVector = Icons.Default.Edit, contentDescription = "Edit")
-                }
-                IconButton(onClick = onDelete) {
-                    Icon(imageVector = Icons.Default.Delete, contentDescription = "Delete")
-                }
-            }
         }
     }
 }

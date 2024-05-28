@@ -12,7 +12,6 @@ import com.parkingmanagerapp.view.adminPanel.userManagement.AdminUserAccountScre
 import com.parkingmanagerapp.view.regUserPanel.MainMenuScreen
 import com.parkingmanagerapp.view.regUserPanel.ParkingSlotScreen
 import com.parkingmanagerapp.view.regUserPanel.SplashScreen
-import com.parkingmanagerapp.view.regUserPanel.userOwnAccountManagemenet.EditUserProfileScreen
 import com.parkingmanagerapp.view.regUserPanel.userOwnAccountManagemenet.RegisterScreen
 import com.parkingmanagerapp.view.regUserPanel.userOwnAccountManagemenet.SignInScreen
 import com.parkingmanagerapp.view.regUserPanel.userOwnAccountManagemenet.UserProfileScreen
@@ -36,11 +35,7 @@ fun AppNavHost(navController: NavHostController, snackbarHostState: SnackbarHost
             ParkingSlotScreen(navController, snackbarHostState = snackbarHostState)
         }
         composable(Screen.UserProfile.route) {
-            UserProfileScreen(navController, snackbarHostState = snackbarHostState)
-        }
-        composable(Screen.EditUserProfile.route) {
-            EditUserProfileScreen(
-                navController,
+            UserProfileScreen(
                 snackbarHostState = snackbarHostState
             )
         }
