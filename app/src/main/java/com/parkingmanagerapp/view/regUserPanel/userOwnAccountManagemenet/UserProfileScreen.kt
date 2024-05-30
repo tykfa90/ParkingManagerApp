@@ -77,11 +77,13 @@ fun UserProfileScreen(
                     showDialog = true
                 }
             )
-            UserAttribute(
-                label = "User access level",
-                value = user?.role.toString(),
-                onEditClick = null // Role might not be editable
-            )
+            if (user?.role == com.parkingmanagerapp.model.UserRole.ADMIN) {
+                UserAttribute(
+                    label = "User access level",
+                    value = user?.role.toString(),
+                    onEditClick = null
+                )
+            }
         }
     }
 

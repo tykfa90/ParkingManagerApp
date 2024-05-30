@@ -31,6 +31,7 @@ class AuthViewModel @Inject constructor(private val userRepository: UserReposito
     init {
         // Checks if a user is logged in when ViewModel is created
         checkAuthenticationState()
+        fetchAllUsers()
     }
 
     // Fetches all users for admin management

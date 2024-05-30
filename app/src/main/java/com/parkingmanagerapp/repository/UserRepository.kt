@@ -65,8 +65,10 @@ class UserRepository @Inject constructor(
 
     private fun User.toMap(): Map<String, Any> {
         return mapOf(
+            "name" to name,
             "surname" to surname,
             "phoneNumber" to phoneNumber,
+            "email" to email,
             "role" to role.toString()
         )
     }
@@ -83,10 +85,10 @@ class UserRepository @Inject constructor(
             val docSnapshot = db.collection("users").document(firebaseUser.uid).get().await()
             User(
                 uid = firebaseUser.uid,
-                name = firebaseUser.displayName ?: "",
+                name = docSnapshot.getString("name") ?: firebaseUser.displayName ?: "",
                 surname = docSnapshot.getString("surname") ?: "",
                 phoneNumber = docSnapshot.getString("phoneNumber") ?: "",
-                email = firebaseUser.email ?: "",
+                email = docSnapshot.getString("email") ?: firebaseUser.email ?: "",
                 role = UserRole.valueOf(docSnapshot.getString("role") ?: "REGULAR")
             )
         } catch (e: Exception) {
@@ -111,9 +113,6 @@ class UserRepository @Inject constructor(
             if (user.email != auth.currentUser?.email) {
                 auth.currentUser?.updateEmail(user.email)?.await()
             }
-
-            // Note: Updating phone number directly in Firebase Auth is more complex
-            // and might require re-authentication and using a phone auth credential.
             true
         } catch (e: Exception) {
             Log.e("UserRepository", "Error updating user details: ${e.localizedMessage}")
@@ -126,8 +125,15 @@ class UserRepository @Inject constructor(
         try {
             val usersSnapshot = db.collection("users").get().await()
             usersSnapshot.documents.mapNotNull { doc ->
-                val user = doc.toObject(User::class.java)
-                user?.apply { uid = doc.id }
+                val userId = doc.id
+                User(
+                    uid = userId,
+                    name = doc.getString("name") ?: "",
+                    surname = doc.getString("surname") ?: "",
+                    phoneNumber = doc.getString("phoneNumber") ?: "",
+                    email = doc.getString("email") ?: "",
+                    role = UserRole.valueOf(doc.getString("role") ?: "REGULAR")
+                )
             }
         } catch (e: Exception) {
             Log.e("UserRepository", "Error while fetching all user accounts: ${e.localizedMessage}")
@@ -141,7 +147,7 @@ class UserRepository @Inject constructor(
             db.collection("users").document(userId).delete().await()
             true
         } catch (e: Exception) {
-            Log.e("UserRepository", "Error while deleting user account: ${e.localizedMessage}")
+            Log.e("UserRepository", "Error while deleting user: ${e.localizedMessage}")
             false
         }
     }
