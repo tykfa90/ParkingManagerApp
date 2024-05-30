@@ -1,11 +1,7 @@
 package com.parkingmanagerapp.viewModel
 
-import android.app.Activity
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.google.firebase.FirebaseException
-import com.google.firebase.auth.PhoneAuthCredential
-import com.google.firebase.auth.PhoneAuthProvider
 import com.parkingmanagerapp.model.User
 import com.parkingmanagerapp.model.UserRole
 import com.parkingmanagerapp.repository.UserRepository
@@ -31,9 +27,6 @@ class AuthViewModel @Inject constructor(private val userRepository: UserReposito
     // List of all users for admin management
     private val _users = MutableStateFlow<List<User>>(emptyList())
     val users = _users.asStateFlow()
-
-    private val _verificationId = MutableStateFlow<String?>(null)
-    val verificationId = _verificationId.asStateFlow()
 
     init {
         // Checks if a user is logged in when ViewModel is created
@@ -127,47 +120,6 @@ class AuthViewModel @Inject constructor(private val userRepository: UserReposito
         _snackbarMessage.value = message
     }
 
-    // Sends verification code
-    fun sendVerificationCode(phoneNumber: String, activity: Activity) {
-        val callbacks = object : PhoneAuthProvider.OnVerificationStateChangedCallbacks() {
-            override fun onVerificationCompleted(credential: PhoneAuthCredential) {
-                viewModelScope.launch {
-                    _user.value?.let {
-                        it.phoneNumber = credential.smsCode ?: it.phoneNumber
-                        // No need to call updatePhoneNumber as it's done automatically
-                    }
-                }
-            }
-
-            override fun onVerificationFailed(e: FirebaseException) {
-                _snackbarMessage.value = "Verification failed: ${e.localizedMessage}"
-            }
-
-            override fun onCodeSent(verificationId: String, token: PhoneAuthProvider.ForceResendingToken) {
-                _verificationId.value = verificationId
-                _snackbarMessage.value = "Verification code sent to $phoneNumber"
-            }
-        }
-
-        viewModelScope.launch {
-            userRepository.sendVerificationCode(phoneNumber, activity, callbacks)
-        }
-    }
-
-    fun verifyAndUpdatePhoneNumber(code: String) {
-        val verificationId = _verificationId.value ?: return
-        viewModelScope.launch {
-            if (userRepository.updatePhoneNumber(verificationId, code)) {
-                _snackbarMessage.value = "Phone number updated successfully."
-                _user.value?.let {
-                    it.phoneNumber = code
-                }
-            } else {
-                _snackbarMessage.value = "Failed to update phone number."
-            }
-        }
-    }
-
     // Deletes the user account
     fun deleteUser(userId: String) {
         viewModelScope.launch {
@@ -177,13 +129,6 @@ class AuthViewModel @Inject constructor(private val userRepository: UserReposito
             } else {
                 _snackbarMessage.value = "Failed to delete user."
             }
-        }
-    }
-
-    // Allows singing in with test phone number
-    fun signInWithTestPhoneNumber(phoneNumber: String, activity: Activity) {
-        viewModelScope.launch {
-            userRepository.signInWithTestPhoneNumber(phoneNumber, activity)
         }
     }
 
