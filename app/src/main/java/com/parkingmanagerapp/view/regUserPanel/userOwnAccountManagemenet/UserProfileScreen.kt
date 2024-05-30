@@ -1,5 +1,6 @@
 package com.parkingmanagerapp.view.regUserPanel.userOwnAccountManagemenet
 
+import EditUserProfileDialog
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -48,9 +49,7 @@ fun UserProfileScreen(
             Text("Email: ${user?.email}")
             Text("Phone Number: ${user?.phoneNumber}")
             Text("User access level: ${user?.role}")
-            Button(onClick = {
-                showEditDialog = true
-            }) {
+            Button(onClick = { showEditDialog = true }) {
                 Text("Edit Profile")
             }
         }

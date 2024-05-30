@@ -1,14 +1,18 @@
 package com.parkingmanagerapp.repository
 
+import android.app.Activity
 import android.util.Log
 import com.google.firebase.auth.EmailAuthProvider
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.ktx.userProfileChangeRequest
+import com.google.firebase.auth.PhoneAuthOptions
+import com.google.firebase.auth.PhoneAuthProvider
+import com.google.firebase.auth.userProfileChangeRequest
 import com.google.firebase.firestore.FirebaseFirestore
 import com.parkingmanagerapp.model.User
 import com.parkingmanagerapp.model.UserRole
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
+import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.coroutines.CoroutineContext
@@ -98,7 +102,42 @@ class UserRepository @Inject constructor(
         }
     }
 
-    // Updates user's account details
+    // Sends the verification code for reauthentication purposes
+    suspend fun sendVerificationCode(phoneNumber: String, activity: Activity, callbacks: PhoneAuthProvider.OnVerificationStateChangedCallbacks) {
+        val options = PhoneAuthOptions.newBuilder(auth)
+            .setPhoneNumber(phoneNumber)
+            .setTimeout(60L, TimeUnit.SECONDS)
+            .setActivity(activity)
+            .setCallbacks(callbacks)
+            .build()
+        PhoneAuthProvider.verifyPhoneNumber(options)
+    }
+
+    // Test function that allows singing-in with omitting the physical phone code verification
+    suspend fun signInWithTestPhoneNumber(phoneNumber: String, activity: Activity) {
+        try {
+            // Generate a credential with a test phone number and verification code
+            val credential = PhoneAuthProvider.getCredential("testVerificationId", "123456")
+            auth.signInWithCredential(credential).await()
+        } catch (e: Exception) {
+            Log.e("UserRepository", "Error while signing in with test phone number: ${e.localizedMessage}")
+        }
+    }
+
+    // Updates user's phone number
+    suspend fun updatePhoneNumber(verificationId: String, code: String): Boolean = withContext(ioDispatcher) {
+        try {
+            val credential = PhoneAuthProvider.getCredential(verificationId, code)
+            val currentUser = auth.currentUser ?: return@withContext false
+            currentUser.updatePhoneNumber(credential).await()
+            true
+        } catch (e: Exception) {
+            Log.e("UserRepository", "Error while updating phone number: ${e.localizedMessage}")
+            false
+        }
+    }
+
+    // Updates the user's other details
     suspend fun updateUserDetails(user: User, password: String): Boolean = withContext(ioDispatcher) {
         try {
             val currentUser = auth.currentUser ?: return@withContext false
@@ -123,11 +162,6 @@ class UserRepository @Inject constructor(
             currentUser.updateProfile(profileUpdates).await()
             currentUser.updateEmail(user.email).await()
 
-            // Update phone number requires phone auth credential
-            if (user.phoneNumber.isNotEmpty()) {
-                TODO("Implement phone number update logic.")
-            }
-
             true
         } catch (e: Exception) {
             Log.e("UserRepository", "Error while updating user details: ${e.localizedMessage}")
@@ -135,7 +169,20 @@ class UserRepository @Inject constructor(
         }
     }
 
-    // Fetches a list of all registered users
+    // Performs the reauthentication for the sake of Firebase Auth
+    private suspend fun reauthenticateUser(password: String): Boolean = withContext(ioDispatcher) {
+        try {
+            val currentUser = auth.currentUser ?: return@withContext false
+            val credential = EmailAuthProvider.getCredential(currentUser.email!!, password)
+            currentUser.reauthenticate(credential).await()
+            true
+        } catch (e: Exception) {
+            Log.e("UserRepository", "Error while re-authenticating user: ${e.localizedMessage}")
+            false
+        }
+    }
+
+    // Fetches all users as list
     suspend fun getAllUsers(): List<User> = withContext(ioDispatcher) {
         try {
             val usersSnapshot = db.collection("users").get().await()
@@ -156,19 +203,6 @@ class UserRepository @Inject constructor(
             true
         } catch (e: Exception) {
             Log.e("UserRepository", "Error while deleting user account: ${e.localizedMessage}")
-            false
-        }
-    }
-
-    // Re-authenticates the User
-    suspend fun reauthenticateUser(password: String): Boolean = withContext(ioDispatcher) {
-        try {
-            val currentUser = auth.currentUser ?: return@withContext false
-            val credential = EmailAuthProvider.getCredential(currentUser.email!!, password)
-            currentUser.reauthenticate(credential).await()
-            true
-        } catch (e: Exception) {
-            Log.e("UserRepository", "Error while re-authenticating user: ${e.localizedMessage}")
             false
         }
     }
