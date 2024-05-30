@@ -17,6 +17,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.parkingmanagerapp.viewModel.AuthViewModel
@@ -33,6 +34,7 @@ fun EditUserProfileDialog(
     var surname by remember { mutableStateOf(user?.surname ?: "") }
     var phoneNumber by remember { mutableStateOf(user?.phoneNumber ?: "") }
     var email by remember { mutableStateOf(user?.email ?: "") }
+    var password by remember { mutableStateOf("") }
 
     // Observe updates and display snackbar messages
     LaunchedEffect(key1 = viewModel.snackbarMessage) {
@@ -74,17 +76,24 @@ fun EditUserProfileDialog(
                     label = { Text("Email") },
                     modifier = Modifier.fillMaxWidth()
                 )
+                OutlinedTextField(
+                    value = password,
+                    onValueChange = { password = it },
+                    label = { Text("Password") },
+                    modifier = Modifier.fillMaxWidth(),
+                    visualTransformation = PasswordVisualTransformation()
+                )
             }
         },
         confirmButton = {
             Button(
                 onClick = {
                     viewModel.updateUserProfile(
-                        name = if (name.isBlank()) user?.name ?: "" else name,
-                        surname = if (surname.isBlank()) user?.surname ?: "" else surname,
-                        phoneNumber = if (phoneNumber.isBlank()) user?.phoneNumber
-                            ?: "" else phoneNumber,
-                        email = if (email.isBlank()) user?.email ?: "" else email
+                        name = name,
+                        surname = surname,
+                        phoneNumber = phoneNumber,
+                        email = email,
+                        password = password
                     )
                     onDismiss()
                 },

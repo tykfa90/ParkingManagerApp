@@ -1,6 +1,7 @@
 package com.parkingmanagerapp.repository
 
 import android.util.Log
+import com.google.firebase.auth.EmailAuthProvider
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.userProfileChangeRequest
 import com.google.firebase.firestore.FirebaseFirestore
@@ -98,8 +99,15 @@ class UserRepository @Inject constructor(
     }
 
     // Updates user's account details
-    suspend fun updateUserDetails(user: User): Boolean = withContext(ioDispatcher) {
+    suspend fun updateUserDetails(user: User, password: String): Boolean = withContext(ioDispatcher) {
         try {
+            val currentUser = auth.currentUser ?: return@withContext false
+
+            // Re-authenticate the user before making sensitive changes
+            if (!reauthenticateUser(password)) {
+                return@withContext false
+            }
+
             // Update additional attributes in Firestore
             db.collection("users").document(user.uid)
                 .update(
@@ -109,14 +117,16 @@ class UserRepository @Inject constructor(
                 ).await()
 
             // Update Firebase Auth user attributes
-            val firebaseUser = auth.currentUser
             val profileUpdates = userProfileChangeRequest {
                 displayName = user.name
             }
-            firebaseUser?.updateProfile(profileUpdates)?.await()
-            firebaseUser?.updateEmail(user.email)?.await()
-            TODO("Implement re-authentication required to update the phone number.")
-            // firebaseUser?.updatePhoneNumber(user.phoneNumber)?.await()
+            currentUser.updateProfile(profileUpdates).await()
+            currentUser.updateEmail(user.email).await()
+
+            // Update phone number requires phone auth credential
+            if (user.phoneNumber.isNotEmpty()) {
+                TODO("Implement phone number update logic.")
+            }
 
             true
         } catch (e: Exception) {
@@ -146,6 +156,19 @@ class UserRepository @Inject constructor(
             true
         } catch (e: Exception) {
             Log.e("UserRepository", "Error while deleting user account: ${e.localizedMessage}")
+            false
+        }
+    }
+
+    // Re-authenticates the User
+    suspend fun reauthenticateUser(password: String): Boolean = withContext(ioDispatcher) {
+        try {
+            val currentUser = auth.currentUser ?: return@withContext false
+            val credential = EmailAuthProvider.getCredential(currentUser.email!!, password)
+            currentUser.reauthenticate(credential).await()
+            true
+        } catch (e: Exception) {
+            Log.e("UserRepository", "Error while re-authenticating user: ${e.localizedMessage}")
             false
         }
     }

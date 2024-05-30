@@ -120,12 +120,13 @@ class AuthViewModel @Inject constructor(private val userRepository: UserReposito
         _snackbarMessage.value = message
     }
 
-    // Updates user profile fields accessible for REGULAR type user
+    // Updates user profile
     fun updateUserProfile(
         name: String,
         surname: String,
         phoneNumber: String,
-        email: String
+        email: String,
+        password: String
     ) {
         viewModelScope.launch {
             // Fetch current user's role and reservations to preserve them in the update
@@ -136,11 +137,11 @@ class AuthViewModel @Inject constructor(private val userRepository: UserReposito
                 phoneNumber = phoneNumber,
                 email = email
             )
-            if (userRepository.updateUserDetails(updatedUser)) {
+            if (userRepository.updateUserDetails(updatedUser, password)) {
                 _user.value = updatedUser
                 _snackbarMessage.value = "Profile updated successfully."
             } else {
-                _snackbarMessage.value = "Failed to update profile."
+                _snackbarMessage.value = "Failed to update profile. Re-authentication may be required."
             }
         }
     }
