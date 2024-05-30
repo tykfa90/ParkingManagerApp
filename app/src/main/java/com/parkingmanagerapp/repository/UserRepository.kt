@@ -71,8 +71,8 @@ class UserRepository @Inject constructor(
     private fun User.toMap(): Map<String, Any> {
         return mapOf(
             "surname" to surname,
-            "role" to role.toString(),
-            "phoneNumber" to phoneNumber
+            "phoneNumber" to phoneNumber,
+            "role" to role.toString()
         )
     }
 
@@ -86,18 +86,16 @@ class UserRepository @Inject constructor(
         val firebaseUser = auth.currentUser ?: return@withContext null
         try {
             val docSnapshot = db.collection("users").document(firebaseUser.uid).get().await()
-            val role = UserRole.valueOf(docSnapshot.getString("role") ?: "REGULAR")
             User(
                 uid = firebaseUser.uid,
                 name = firebaseUser.displayName ?: "",
                 surname = docSnapshot.getString("surname") ?: "",
-                phoneNumber = firebaseUser.phoneNumber ?: "",
+                phoneNumber = docSnapshot.getString("phoneNumber") ?: "",
                 email = firebaseUser.email ?: "",
-                role = role
+                role = UserRole.valueOf(docSnapshot.getString("role") ?: "REGULAR")
             )
         } catch (e: Exception) {
-            e.printStackTrace()
-            Log.e("UserRepository", "Error while fetching current user: ${e.localizedMessage}")
+            Log.e("UserRepository", "Error fetching user data: ${e.localizedMessage}")
             null
         }
     }
@@ -138,33 +136,27 @@ class UserRepository @Inject constructor(
     }
 
     // Updates the user's other details
-    suspend fun updateUserDetails(user: User, password: String): Boolean = withContext(ioDispatcher) {
+    suspend fun updateUserDetails(user: User): Boolean = withContext(ioDispatcher) {
         try {
-            val currentUser = auth.currentUser ?: return@withContext false
+            // Update user details in Firestore
+            db.collection("users").document(user.uid).set(user.toMap()).await()
 
-            // Re-authenticate the user before making sensitive changes
-            if (!reauthenticateUser(password)) {
-                return@withContext false
-            }
-
-            // Update additional attributes in Firestore
-            db.collection("users").document(user.uid)
-                .update(
-                    "surname", user.surname,
-                    "role", user.role.toString(),
-                    "phoneNumber", user.phoneNumber
-                ).await()
-
-            // Update Firebase Auth user attributes
+            // Update Firebase Auth profile
             val profileUpdates = userProfileChangeRequest {
                 displayName = user.name
             }
-            currentUser.updateProfile(profileUpdates).await()
-            currentUser.updateEmail(user.email).await()
+            auth.currentUser?.updateProfile(profileUpdates)?.await()
 
+            // Update email if changed
+            if (user.email != auth.currentUser?.email) {
+                auth.currentUser?.updateEmail(user.email)?.await()
+            }
+
+            // Note: Updating phone number directly in Firebase Auth is more complex
+            // and might require re-authentication and using a phone auth credential.
             true
         } catch (e: Exception) {
-            Log.e("UserRepository", "Error while updating user details: ${e.localizedMessage}")
+            Log.e("UserRepository", "Error updating user details: ${e.localizedMessage}")
             false
         }
     }

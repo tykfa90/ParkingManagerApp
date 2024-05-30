@@ -127,32 +127,6 @@ class AuthViewModel @Inject constructor(private val userRepository: UserReposito
         _snackbarMessage.value = message
     }
 
-    // Updates user profile
-    fun updateUserProfile(
-        name: String,
-        surname: String,
-        phoneNumber: String,
-        email: String,
-        password: String
-    ) {
-        viewModelScope.launch {
-            // Fetch current user's role and reservations to preserve them in the update
-            val currentUser = _user.value ?: return@launch
-            val updatedUser = currentUser.copy(
-                name = name,
-                surname = surname,
-                phoneNumber = phoneNumber,
-                email = email
-            )
-            if (userRepository.updateUserDetails(updatedUser, password)) {
-                _user.value = updatedUser
-                _snackbarMessage.value = "Profile updated successfully."
-            } else {
-                _snackbarMessage.value = "Failed to update profile. Re-authentication may be required."
-            }
-        }
-    }
-
     // Sends verification code
     fun sendVerificationCode(phoneNumber: String, activity: Activity) {
         val callbacks = object : PhoneAuthProvider.OnVerificationStateChangedCallbacks() {
@@ -210,6 +184,27 @@ class AuthViewModel @Inject constructor(private val userRepository: UserReposito
     fun signInWithTestPhoneNumber(phoneNumber: String, activity: Activity) {
         viewModelScope.launch {
             userRepository.signInWithTestPhoneNumber(phoneNumber, activity)
+        }
+    }
+
+    // Updates user attribute
+    fun updateUserAttribute(attribute: String, value: String) {
+        viewModelScope.launch {
+            val currentUser = _user.value ?: return@launch
+            val updatedUser = when (attribute) {
+                "Name" -> currentUser.copy(name = value)
+                "Surname" -> currentUser.copy(surname = value)
+                "Email" -> currentUser.copy(email = value)
+                "Phone Number" -> currentUser.copy(phoneNumber = value)
+                else -> currentUser
+            }
+
+            if (userRepository.updateUserDetails(updatedUser)) {
+                _user.value = updatedUser
+                _snackbarMessage.value = "$attribute updated successfully."
+            } else {
+                _snackbarMessage.value = "Failed to update $attribute."
+            }
         }
     }
 }
