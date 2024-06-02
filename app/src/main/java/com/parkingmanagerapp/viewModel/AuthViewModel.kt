@@ -1,7 +1,13 @@
 package com.parkingmanagerapp.viewModel
 
+import android.app.Activity
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.firebase.FirebaseException
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.PhoneAuthCredential
+import com.google.firebase.auth.PhoneAuthOptions
+import com.google.firebase.auth.PhoneAuthProvider
 import com.parkingmanagerapp.model.User
 import com.parkingmanagerapp.model.UserRole
 import com.parkingmanagerapp.repository.UserRepository
@@ -9,10 +15,14 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 
 @HiltViewModel
-class AuthViewModel @Inject constructor(private val userRepository: UserRepository) : ViewModel() {
+class AuthViewModel @Inject constructor(
+    private val userRepository: UserRepository,
+    private val auth: FirebaseAuth
+) : ViewModel() {
 
     private val _signInStatus = MutableStateFlow<Boolean?>(null)
     val signInStatus = _signInStatus.asStateFlow()
@@ -27,6 +37,12 @@ class AuthViewModel @Inject constructor(private val userRepository: UserReposito
     // List of all users for admin management
     private val _users = MutableStateFlow<List<User>>(emptyList())
     val users = _users.asStateFlow()
+
+    private val _verificationId = MutableStateFlow<String?>(null)
+    val verificationId = _verificationId.asStateFlow()
+
+    private val _useTestPhoneNumber = MutableStateFlow<Boolean>(false)
+    val useTestPhoneNumber = _useTestPhoneNumber.asStateFlow()
 
     init {
         // Checks if a user is logged in when ViewModel is created
@@ -47,7 +63,7 @@ class AuthViewModel @Inject constructor(private val userRepository: UserReposito
     }
 
     // Sorts users by name
-    fun sortUsersByName() {
+    fun sortUsersByFirstName() {
         _users.value = _users.value.sortedBy { it.name }
     }
 
@@ -133,10 +149,13 @@ class AuthViewModel @Inject constructor(private val userRepository: UserReposito
         }
     }
 
-    fun updateUserEmail(currentEmail: String, password: String, newEmail: String) {
+    fun updateUserEmail(password: String, newEmail: String) {
+        val currentUser = auth.currentUser ?: return
+
         viewModelScope.launch {
-            if (userRepository.reauthenticateUser(currentEmail, password)) {
+            if (userRepository.reauthenticateUser(currentUser.email!!, password)) {
                 if (userRepository.updateUserEmail(newEmail)) {
+                    fetchAllUsers() // Fetch users to update the state
                     _snackbarMessage.value = "Email updated successfully."
                 } else {
                     _snackbarMessage.value = "Failed to update email."
@@ -147,9 +166,11 @@ class AuthViewModel @Inject constructor(private val userRepository: UserReposito
         }
     }
 
-    fun updateUserPassword(email: String, password: String, newPassword: String) {
+    fun updateUserPassword(password: String, newPassword: String) {
+        val currentUser = auth.currentUser ?: return
+
         viewModelScope.launch {
-            if (userRepository.reauthenticateUser(email, password)) {
+            if (userRepository.reauthenticateUser(currentUser.email!!, password)) {
                 if (userRepository.updateUserPassword(newPassword)) {
                     _snackbarMessage.value = "Password updated successfully."
                 } else {
@@ -161,13 +182,26 @@ class AuthViewModel @Inject constructor(private val userRepository: UserReposito
         }
     }
 
-    fun updateUserPhoneNumber(email: String, password: String, newPhoneNumber: String, verificationId: String, code: String) {
+    fun updateUserPhoneNumber(password: String, newPhoneNumber: String, verificationId: String, code: String) {
+        val currentUser = auth.currentUser ?: return
+
         viewModelScope.launch {
-            if (userRepository.reauthenticateUser(email, password)) {
-                if (userRepository.updateUserPhoneNumber(newPhoneNumber, verificationId, code)) {
-                    _snackbarMessage.value = "Phone number updated successfully."
+            if (userRepository.reauthenticateUser(currentUser.email!!, password)) {
+                if (_useTestPhoneNumber.value && newPhoneNumber == "+48 111111111" && code == "111111") {
+                    if (userRepository.updateUserPhoneNumber(newPhoneNumber, verificationId, code)) {
+                        _snackbarMessage.value = "Phone number updated successfully."
+                    } else {
+                        _snackbarMessage.value = "Failed to update phone number."
+                    }
                 } else {
-                    _snackbarMessage.value = "Failed to update phone number."
+                    try {
+                        val credential = PhoneAuthProvider.getCredential(verificationId, code)
+                        currentUser.updatePhoneNumber(credential).await()
+                        userRepository.updateUserPhoneNumber(newPhoneNumber, verificationId, code)
+                        _snackbarMessage.value = "Phone number updated successfully."
+                    } catch (e: Exception) {
+                        _snackbarMessage.value = "Failed to update phone number: ${e.localizedMessage}"
+                    }
                 }
             } else {
                 _snackbarMessage.value = "Re-authentication failed."
@@ -175,11 +209,15 @@ class AuthViewModel @Inject constructor(private val userRepository: UserReposito
         }
     }
 
+    fun setUseTestPhoneNumber(useTest: Boolean) {
+        _useTestPhoneNumber.value = useTest
+    }
+
     fun updateUserName(newName: String) {
         viewModelScope.launch {
             val currentUser = userRepository.getCurrentUser() ?: return@launch
             val updatedUser = currentUser.copy(name = newName)
-            if (userRepository.updateUserDetails(updatedUser)) {
+            if (userRepository.updateUserFirstName(updatedUser)) {
                 fetchAllUsers()
                 _snackbarMessage.value = "Name updated successfully."
             } else {
@@ -192,12 +230,43 @@ class AuthViewModel @Inject constructor(private val userRepository: UserReposito
         viewModelScope.launch {
             val currentUser = userRepository.getCurrentUser() ?: return@launch
             val updatedUser = currentUser.copy(surname = newSurname)
-            if (userRepository.updateUserDetails(updatedUser)) {
+            if (userRepository.updateUserFirstName(updatedUser)) {
                 fetchAllUsers()
                 _snackbarMessage.value = "Surname updated successfully."
             } else {
                 _snackbarMessage.value = "Failed to update surname."
             }
         }
+    }
+
+    fun sendVerificationCode(phoneNumber: String, activity: Activity) {
+        if (_useTestPhoneNumber.value && phoneNumber == "+48 111111111") {
+            _verificationId.value = "test-verification-id" // Use a mock verification ID
+            _snackbarMessage.value = "Using test phone number. Verification code: 111111"
+            return
+        }
+
+        val callbacks = object : PhoneAuthProvider.OnVerificationStateChangedCallbacks() {
+            override fun onVerificationCompleted(credential: PhoneAuthCredential) {
+                _snackbarMessage.value = "Verification completed automatically."
+            }
+
+            override fun onVerificationFailed(e: FirebaseException) {
+                _snackbarMessage.value = "Verification failed: ${e.localizedMessage}"
+            }
+
+            override fun onCodeSent(verificationId: String, token: PhoneAuthProvider.ForceResendingToken) {
+                _verificationId.value = verificationId
+                _snackbarMessage.value = "Verification code sent."
+            }
+        }
+
+        val options = PhoneAuthOptions.newBuilder(auth)
+            .setPhoneNumber(phoneNumber)
+            .setTimeout(120L, java.util.concurrent.TimeUnit.SECONDS)
+            .setActivity(activity)
+            .setCallbacks(callbacks)
+            .build()
+        PhoneAuthProvider.verifyPhoneNumber(options)
     }
 }

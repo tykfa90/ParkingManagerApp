@@ -100,7 +100,7 @@ class UserRepository @Inject constructor(
     }
 
     // Updates the user's other details
-    suspend fun updateUserDetails(user: User): Boolean = withContext(ioDispatcher) {
+    suspend fun updateUserFirstName(user: User): Boolean = withContext(ioDispatcher) {
         try {
             db.collection("users").document(user.uid).set(user.toMap()).await()
 

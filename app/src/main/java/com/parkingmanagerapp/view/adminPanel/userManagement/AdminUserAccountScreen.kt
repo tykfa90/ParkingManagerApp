@@ -53,7 +53,7 @@ fun AdminUserAccountScreen(
                     .padding(16.dp),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Button(onClick = { viewModel.sortUsersByName() }) {
+                Button(onClick = { viewModel.sortUsersByFirstName() }) {
                     Text("Sort by Name")
                 }
                 Button(onClick = { viewModel.sortUsersBySurname() }) {
