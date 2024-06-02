@@ -133,23 +133,70 @@ class AuthViewModel @Inject constructor(private val userRepository: UserReposito
         }
     }
 
-    // Updates user attribute
-    fun updateUserAttribute(attribute: String, value: String) {
+    fun updateUserEmail(currentEmail: String, password: String, newEmail: String) {
         viewModelScope.launch {
-            val currentUser = _user.value ?: return@launch
-            val updatedUser = when (attribute) {
-                "Name" -> currentUser.copy(name = value)
-                "Surname" -> currentUser.copy(surname = value)
-                "Email" -> currentUser.copy(email = value)
-                "Phone Number" -> currentUser.copy(phoneNumber = value)
-                else -> currentUser
-            }
-
-            if (userRepository.updateUserDetails(updatedUser)) {
-                _user.value = updatedUser
-                _snackbarMessage.value = "$attribute updated successfully."
+            if (userRepository.reauthenticateUser(currentEmail, password)) {
+                if (userRepository.updateUserEmail(newEmail)) {
+                    _snackbarMessage.value = "Email updated successfully."
+                } else {
+                    _snackbarMessage.value = "Failed to update email."
+                }
             } else {
-                _snackbarMessage.value = "Failed to update $attribute."
+                _snackbarMessage.value = "Re-authentication failed."
+            }
+        }
+    }
+
+    fun updateUserPassword(email: String, password: String, newPassword: String) {
+        viewModelScope.launch {
+            if (userRepository.reauthenticateUser(email, password)) {
+                if (userRepository.updateUserPassword(newPassword)) {
+                    _snackbarMessage.value = "Password updated successfully."
+                } else {
+                    _snackbarMessage.value = "Failed to update password."
+                }
+            } else {
+                _snackbarMessage.value = "Re-authentication failed."
+            }
+        }
+    }
+
+    fun updateUserPhoneNumber(email: String, password: String, newPhoneNumber: String, verificationId: String, code: String) {
+        viewModelScope.launch {
+            if (userRepository.reauthenticateUser(email, password)) {
+                if (userRepository.updateUserPhoneNumber(newPhoneNumber, verificationId, code)) {
+                    _snackbarMessage.value = "Phone number updated successfully."
+                } else {
+                    _snackbarMessage.value = "Failed to update phone number."
+                }
+            } else {
+                _snackbarMessage.value = "Re-authentication failed."
+            }
+        }
+    }
+
+    fun updateUserName(newName: String) {
+        viewModelScope.launch {
+            val currentUser = userRepository.getCurrentUser() ?: return@launch
+            val updatedUser = currentUser.copy(name = newName)
+            if (userRepository.updateUserDetails(updatedUser)) {
+                fetchAllUsers()
+                _snackbarMessage.value = "Name updated successfully."
+            } else {
+                _snackbarMessage.value = "Failed to update name."
+            }
+        }
+    }
+
+    fun updateUserSurname(newSurname: String) {
+        viewModelScope.launch {
+            val currentUser = userRepository.getCurrentUser() ?: return@launch
+            val updatedUser = currentUser.copy(surname = newSurname)
+            if (userRepository.updateUserDetails(updatedUser)) {
+                fetchAllUsers()
+                _snackbarMessage.value = "Surname updated successfully."
+            } else {
+                _snackbarMessage.value = "Failed to update surname."
             }
         }
     }

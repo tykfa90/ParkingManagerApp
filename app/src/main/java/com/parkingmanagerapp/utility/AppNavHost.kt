@@ -35,7 +35,7 @@ fun AppNavHost(navController: NavHostController, snackbarHostState: SnackbarHost
             ParkingSlotScreen(navController, snackbarHostState = snackbarHostState)
         }
         composable(Screen.UserProfile.route) {
-            UserProfileScreen(
+            UserProfileScreen(navController,
                 snackbarHostState = snackbarHostState
             )
         }

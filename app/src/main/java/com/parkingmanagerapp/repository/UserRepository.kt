@@ -1,7 +1,9 @@
 package com.parkingmanagerapp.repository
 
 import android.util.Log
+import com.google.firebase.auth.EmailAuthProvider
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.PhoneAuthProvider
 import com.google.firebase.auth.userProfileChangeRequest
 import com.google.firebase.firestore.FirebaseFirestore
 import com.parkingmanagerapp.model.User
@@ -100,22 +102,67 @@ class UserRepository @Inject constructor(
     // Updates the user's other details
     suspend fun updateUserDetails(user: User): Boolean = withContext(ioDispatcher) {
         try {
-            // Update user details in Firestore
             db.collection("users").document(user.uid).set(user.toMap()).await()
 
-            // Update Firebase Auth profile
             val profileUpdates = userProfileChangeRequest {
                 displayName = user.name
             }
             auth.currentUser?.updateProfile(profileUpdates)?.await()
 
-            // Update email if changed
             if (user.email != auth.currentUser?.email) {
                 auth.currentUser?.updateEmail(user.email)?.await()
             }
             true
         } catch (e: Exception) {
             Log.e("UserRepository", "Error updating user details: ${e.localizedMessage}")
+            false
+        }
+    }
+
+    suspend fun reauthenticateUser(email: String, password: String): Boolean = withContext(ioDispatcher) {
+        try {
+            val user = auth.currentUser ?: return@withContext false
+            val credential = EmailAuthProvider.getCredential(email, password)
+            user.reauthenticate(credential).await()
+            true
+        } catch (e: Exception) {
+            Log.e("UserRepository", "Error re-authenticating user: ${e.localizedMessage}")
+            false
+        }
+    }
+
+    suspend fun updateUserEmail(newEmail: String): Boolean = withContext(ioDispatcher) {
+        try {
+            val user = auth.currentUser ?: return@withContext false
+            user.updateEmail(newEmail).await()
+            db.collection("users").document(user.uid).update("email", newEmail).await()
+            true
+        } catch (e: Exception) {
+            Log.e("UserRepository", "Error updating email: ${e.localizedMessage}")
+            false
+        }
+    }
+
+    suspend fun updateUserPassword(newPassword: String): Boolean = withContext(ioDispatcher) {
+        try {
+            val user = auth.currentUser ?: return@withContext false
+            user.updatePassword(newPassword).await()
+            true
+        } catch (e: Exception) {
+            Log.e("UserRepository", "Error updating password: ${e.localizedMessage}")
+            false
+        }
+    }
+
+    suspend fun updateUserPhoneNumber(newPhoneNumber: String, verificationId: String, code: String): Boolean = withContext(ioDispatcher) {
+        try {
+            val user = auth.currentUser ?: return@withContext false
+            val credential = PhoneAuthProvider.getCredential(verificationId, code)
+            user.updatePhoneNumber(credential).await()
+            db.collection("users").document(user.uid).update("phoneNumber", newPhoneNumber).await()
+            true
+        } catch (e: Exception) {
+            Log.e("UserRepository", "Error updating phone number: ${e.localizedMessage}")
             false
         }
     }
