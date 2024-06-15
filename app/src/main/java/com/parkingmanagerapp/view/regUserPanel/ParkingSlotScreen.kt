@@ -11,6 +11,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.parkingmanagerapp.ui.theme.ListScreenLayout
 import com.parkingmanagerapp.ui.theme.StandardScreenLayout
+import com.parkingmanagerapp.view.adminPanel.parkingSlotManagement.UnifiedParkingSlotItem
 import com.parkingmanagerapp.viewModel.ParkingSlotViewModel
 
 @Composable
@@ -29,9 +30,23 @@ fun ParkingSlotScreen(
         Box(modifier = Modifier.fillMaxSize()) {
             ListScreenLayout(
                 listItems = parkingSlots,
-                isAdminContext = false, // Regular users cannot edit or delete
+                isAdminContext = false,
                 onEdit = {}, // No-op for regular users
-                onDelete = {} // No-op for regular users
+                onDelete = {}, // No-op for regular users
+                itemContent = { item, isAdmin, onEdit, onDelete, modifier ->
+                    UnifiedParkingSlotItem(
+                        parkingSlot = item,
+                        buttonText = if (isAdmin) "Edit" else "Reserve",
+                        onButtonClick = {
+                            if (isAdmin) {
+                                onEdit(item)
+                            } else {
+
+                            }
+                        },
+                        modifier = modifier
+                    )
+                }
             )
         }
     }

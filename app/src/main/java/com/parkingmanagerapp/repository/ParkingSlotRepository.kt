@@ -18,10 +18,13 @@ class ParkingSlotRepository @Inject constructor(
         return try {
             val documentRef = parkingSlotCollection.add(parkingSlot).await()
             val documentId = documentRef.id
-            parkingSlotCollection.document(documentId).update("slotID", documentId).await()
+            parkingSlotCollection.document(documentId).update("parkingSlotID", documentId).await()
             Result.success(Unit)
         } catch (e: Exception) {
-            Log.e("ParkingSlotRepository", "Error while adding new parking slot: ${e.localizedMessage}")
+            Log.e(
+                "ParkingSlotRepository",
+                "Error while adding new parking slot: ${e.localizedMessage}"
+            )
             Result.failure(e)
         }
     }
@@ -38,7 +41,10 @@ class ParkingSlotRepository @Inject constructor(
 
         parkingSlots
     } catch (e: Exception) {
-        Log.e("ParkingSlotRepository", "Error while fetching all parking slots: ${e.localizedMessage}")
+        Log.e(
+            "ParkingSlotRepository",
+            "Error while fetching all parking slots: ${e.localizedMessage}"
+        )
         emptyList()
     }
 
@@ -49,7 +55,10 @@ class ParkingSlotRepository @Inject constructor(
                 .set(updatedSlot).await()
             Result.success(Unit)
         } catch (e: Exception) {
-            Log.e("ParkingSlotRepository", "Error while updating parking slot: ${e.localizedMessage}")
+            Log.e(
+                "ParkingSlotRepository",
+                "Error while updating parking slot: ${e.localizedMessage}"
+            )
             Result.failure(e)
         }
     }
@@ -60,7 +69,10 @@ class ParkingSlotRepository @Inject constructor(
                 .delete().await()
             Result.success(Unit)
         } catch (e: Exception) {
-            Log.e("ParkingSlotRepository", "Error while deleting parking slot: ${e.localizedMessage}")
+            Log.e(
+                "ParkingSlotRepository",
+                "Error while deleting parking slot: ${e.localizedMessage}"
+            )
             Result.failure(e)
         }
     }

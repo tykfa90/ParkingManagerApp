@@ -1,4 +1,4 @@
-package com.parkingmanagerapp.view.regUserPanel.userOwnAccountManagemenet
+package com.parkingmanagerapp.view.regUserPanel.userAccountManagement
 
 import android.app.Activity
 import androidx.compose.foundation.layout.Column
@@ -29,19 +29,20 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.parkingmanagerapp.viewModel.AuthViewModel
 
 @Composable
-fun EditPasswordDialog(
+fun EditEmailDialog(
     onDismiss: () -> Unit,
     snackbarHostState: SnackbarHostState,
     viewModel: AuthViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current
     val activity = context as Activity
+    val currentEmail = viewModel.user.value?.email ?: ""
+    var newEmail by remember { mutableStateOf(currentEmail) }
     var password by remember { mutableStateOf("") }
-    var newPassword by remember { mutableStateOf("") }
-    var newPhoneNumber by remember { mutableStateOf("") }
     var verificationCode by remember { mutableStateOf("") }
     val verificationId by viewModel.verificationId.collectAsState()
     val useTestPhoneNumber by viewModel.useTestPhoneNumber.collectAsState()
+    val phoneNumber = viewModel.user.value?.phoneNumber ?: ""
 
     LaunchedEffect(viewModel.snackbarMessage) {
         viewModel.snackbarMessage.value?.let { message ->
@@ -52,30 +53,23 @@ fun EditPasswordDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text(text = "Edit Password") },
+        title = { Text(text = "Edit Email") },
         text = {
             Column {
                 OutlinedTextField(
-                    value = password,
-                    onValueChange = { password = it },
-                    label = { Text(text = "Current Password") },
-                    modifier = Modifier.fillMaxWidth(),
-                    visualTransformation = PasswordVisualTransformation()
-                )
-                OutlinedTextField(
-                    value = newPassword,
-                    onValueChange = { newPassword = it },
-                    label = { Text(text = "New Password") },
-                    modifier = Modifier.fillMaxWidth(),
-                    visualTransformation = PasswordVisualTransformation()
-                )
-                OutlinedTextField(
-                    value = newPhoneNumber,
-                    onValueChange = { newPhoneNumber = it },
-                    label = { Text(text = "Phone Number for Verification") },
+                    value = newEmail,
+                    onValueChange = { newEmail = it },
+                    label = { Text(text = "New Email") },
                     modifier = Modifier.fillMaxWidth()
                 )
-                if (useTestPhoneNumber && newPhoneNumber == "+48 111111111") {
+                OutlinedTextField(
+                    value = password,
+                    onValueChange = { password = it },
+                    label = { Text(text = "Password") },
+                    modifier = Modifier.fillMaxWidth(),
+                    visualTransformation = PasswordVisualTransformation()
+                )
+                if (useTestPhoneNumber && phoneNumber == "+48 111111111") {
                     Text("Using test phone number. Enter verification code: 111111")
                 }
                 OutlinedTextField(
@@ -83,7 +77,7 @@ fun EditPasswordDialog(
                     onValueChange = { verificationCode = it },
                     label = { Text(text = "Verification Code") },
                     modifier = Modifier.fillMaxWidth(),
-                    enabled = !(useTestPhoneNumber && newPhoneNumber == "+48 111111111")
+                    enabled = !(useTestPhoneNumber && phoneNumber == "+48 111111111")
                 )
                 Row(
                     modifier = Modifier.padding(top = 8.dp),
@@ -101,17 +95,17 @@ fun EditPasswordDialog(
         confirmButton = {
             Button(
                 onClick = {
-                    if (verificationId != null || (useTestPhoneNumber && newPhoneNumber == "+48 111111111")) {
-                        viewModel.updateUserPhoneNumber(password, newPhoneNumber, verificationId ?: "test-verification-id", verificationCode)
-                        viewModel.updateUserPassword(password, newPassword)
+                    if (verificationId != null || (useTestPhoneNumber && phoneNumber == "+48 111111111")) {
+                        // Update email
+                        viewModel.updateUserEmail(password, newEmail)
                     } else {
-                        viewModel.sendVerificationCode(newPhoneNumber, activity)
+                        viewModel.sendVerificationCode(phoneNumber, activity)
                     }
                     onDismiss()
                 },
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text("Update Password")
+                Text("Update Email")
             }
         },
         dismissButton = {

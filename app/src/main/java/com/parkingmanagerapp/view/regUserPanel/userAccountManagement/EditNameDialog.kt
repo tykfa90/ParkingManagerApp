@@ -1,4 +1,4 @@
-package com.parkingmanagerapp.view.regUserPanel.userOwnAccountManagemenet
+package com.parkingmanagerapp.view.regUserPanel.userAccountManagement
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -18,12 +18,12 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.parkingmanagerapp.viewModel.AuthViewModel
 
 @Composable
-fun EditSurnameDialog(
+fun EditNameDialog(
     onDismiss: () -> Unit,
     snackbarHostState: SnackbarHostState,
     viewModel: AuthViewModel = hiltViewModel()
 ) {
-    var newSurname by remember { mutableStateOf("") }
+    var newName by remember { mutableStateOf("") }
 
     LaunchedEffect(viewModel.snackbarMessage) {
         viewModel.snackbarMessage.value?.let { message ->
@@ -34,13 +34,13 @@ fun EditSurnameDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text(text = "Edit Surname") },
+        title = { Text(text = "Edit Name") },
         text = {
             Column {
                 OutlinedTextField(
-                    value = newSurname,
-                    onValueChange = { newSurname = it },
-                    label = { Text(text = "New Surname") },
+                    value = newName,
+                    onValueChange = { newName = it },
+                    label = { Text(text = "New Name") },
                     modifier = Modifier.fillMaxWidth()
                 )
             }
@@ -48,12 +48,12 @@ fun EditSurnameDialog(
         confirmButton = {
             Button(
                 onClick = {
-                    viewModel.updateUserSurname(newSurname)
+                    viewModel.updateUserName(newName)
                     onDismiss()
                 },
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text("Update Surname")
+                Text("Update Name")
             }
         },
         dismissButton = {

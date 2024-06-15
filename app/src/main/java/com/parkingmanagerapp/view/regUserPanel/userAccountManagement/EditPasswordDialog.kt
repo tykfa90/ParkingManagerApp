@@ -1,4 +1,4 @@
-package com.parkingmanagerapp.view.regUserPanel.userOwnAccountManagemenet
+package com.parkingmanagerapp.view.regUserPanel.userAccountManagement
 
 import android.app.Activity
 import androidx.compose.foundation.layout.Column
@@ -29,7 +29,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.parkingmanagerapp.viewModel.AuthViewModel
 
 @Composable
-fun EditPhoneNumberDialog(
+fun EditPasswordDialog(
     onDismiss: () -> Unit,
     snackbarHostState: SnackbarHostState,
     viewModel: AuthViewModel = hiltViewModel()
@@ -37,6 +37,7 @@ fun EditPhoneNumberDialog(
     val context = LocalContext.current
     val activity = context as Activity
     var password by remember { mutableStateOf("") }
+    var newPassword by remember { mutableStateOf("") }
     var newPhoneNumber by remember { mutableStateOf("") }
     var verificationCode by remember { mutableStateOf("") }
     val verificationId by viewModel.verificationId.collectAsState()
@@ -51,20 +52,27 @@ fun EditPhoneNumberDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text(text = "Edit Phone Number") },
+        title = { Text(text = "Edit Password") },
         text = {
             Column {
                 OutlinedTextField(
                     value = password,
                     onValueChange = { password = it },
-                    label = { Text(text = "Password") },
+                    label = { Text(text = "Current Password") },
+                    modifier = Modifier.fillMaxWidth(),
+                    visualTransformation = PasswordVisualTransformation()
+                )
+                OutlinedTextField(
+                    value = newPassword,
+                    onValueChange = { newPassword = it },
+                    label = { Text(text = "New Password") },
                     modifier = Modifier.fillMaxWidth(),
                     visualTransformation = PasswordVisualTransformation()
                 )
                 OutlinedTextField(
                     value = newPhoneNumber,
                     onValueChange = { newPhoneNumber = it },
-                    label = { Text(text = "New Phone Number") },
+                    label = { Text(text = "Phone Number for Verification") },
                     modifier = Modifier.fillMaxWidth()
                 )
                 if (useTestPhoneNumber && newPhoneNumber == "+48 111111111") {
@@ -94,7 +102,7 @@ fun EditPhoneNumberDialog(
             Button(
                 onClick = {
                     if (verificationId != null || (useTestPhoneNumber && newPhoneNumber == "+48 111111111")) {
-                        viewModel.updateUserPhoneNumber(password, newPhoneNumber, verificationId ?: "test-verification-id", verificationCode)
+                        viewModel.updateUserPassword(password, newPassword)
                     } else {
                         viewModel.sendVerificationCode(newPhoneNumber, activity)
                     }
@@ -102,7 +110,7 @@ fun EditPhoneNumberDialog(
                 },
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text("Update Phone Number")
+                Text("Update Password")
             }
         },
         dismissButton = {

@@ -41,7 +41,7 @@ class AuthViewModel @Inject constructor(
     private val _verificationId = MutableStateFlow<String?>(null)
     val verificationId = _verificationId.asStateFlow()
 
-    private val _useTestPhoneNumber = MutableStateFlow<Boolean>(false)
+    private val _useTestPhoneNumber = MutableStateFlow(false)
     val useTestPhoneNumber = _useTestPhoneNumber.asStateFlow()
 
     init {
@@ -89,19 +89,38 @@ class AuthViewModel @Inject constructor(
 
     // Registers a new user in the FirebaseAuth database. After generating uid,
     // passes over the newUser account with additional data to the Firebase Firestore
-    fun registerWithEmailAndPassword(email: String, password: String, name: String) {
+    fun registerWithEmailAndPassword(
+        firstName: String,
+        surname: String,
+        email: String,
+        phoneNumber: String,
+        password: String,
+        confirmPassword: String
+    ) {
         viewModelScope.launch {
+            // Input validation
+            if (firstName.isBlank() || surname.isBlank() || email.isBlank() || phoneNumber.isBlank() || password.isBlank() || confirmPassword.isBlank()) {
+                _snackbarMessage.value = "All fields are required."
+                return@launch
+            }
+
+            if (password != confirmPassword) {
+                _snackbarMessage.value = "Passwords do not match."
+                return@launch
+            }
+
             val newUser = User(
-                name = name,
+                name = firstName,
+                surname = surname,
                 email = email,
+                phoneNumber = phoneNumber,
                 role = UserRole.REGULAR // Defaults all new accounts to REGULAR type account
             )
 
             val success = userRepository.registerNewUser(newUser, password)
             if (success) {
                 // Upon successful registration, update the UI state and user flow
-                _user.value =
-                    newUser // Temporarily set user value
+                _user.value = newUser // Temporarily set user value
                 _signInStatus.value = true
                 _snackbarMessage.value = "Registration successful!"
             } else {
@@ -149,19 +168,27 @@ class AuthViewModel @Inject constructor(
         }
     }
 
+    // Updates the user email address
     fun updateUserEmail(password: String, newEmail: String) {
         val currentUser = auth.currentUser ?: return
 
         viewModelScope.launch {
-            if (userRepository.reauthenticateUser(currentUser.email!!, password)) {
-                if (userRepository.updateUserEmail(newEmail)) {
-                    fetchAllUsers() // Fetch users to update the state
-                    _snackbarMessage.value = "Email updated successfully."
+            try {
+                // Re-authenticate the user
+                if (userRepository.reauthenticateUser(currentUser.email!!, password)) {
+                    // Send verification email to the new email address
+                    currentUser.verifyBeforeUpdateEmail(newEmail).addOnCompleteListener { task ->
+                        if (task.isSuccessful) {
+                            _snackbarMessage.value = "Verification email sent. Please check your new email."
+                        } else {
+                            _snackbarMessage.value = "Failed to send verification email: ${task.exception?.localizedMessage}"
+                        }
+                    }
                 } else {
-                    _snackbarMessage.value = "Failed to update email."
+                    _snackbarMessage.value = "Re-authentication failed."
                 }
-            } else {
-                _snackbarMessage.value = "Re-authentication failed."
+            } catch (e: Exception) {
+                _snackbarMessage.value = "Failed to update email: ${e.localizedMessage}"
             }
         }
     }
@@ -182,59 +209,31 @@ class AuthViewModel @Inject constructor(
         }
     }
 
-    fun updateUserPhoneNumber(password: String, newPhoneNumber: String, verificationId: String, code: String) {
-        val currentUser = auth.currentUser ?: return
-
+    fun updateUserPhoneNumber(
+        email: String,
+        verificationId: String,
+        code: String,
+        verificationCode: String
+    ) {
+        val credential = PhoneAuthProvider.getCredential(verificationId, code)
         viewModelScope.launch {
-            if (userRepository.reauthenticateUser(currentUser.email!!, password)) {
-                if (_useTestPhoneNumber.value && newPhoneNumber == "+48 111111111" && code == "111111") {
-                    if (userRepository.updateUserPhoneNumber(newPhoneNumber, verificationId, code)) {
-                        _snackbarMessage.value = "Phone number updated successfully."
-                    } else {
-                        _snackbarMessage.value = "Failed to update phone number."
-                    }
-                } else {
-                    try {
-                        val credential = PhoneAuthProvider.getCredential(verificationId, code)
-                        currentUser.updatePhoneNumber(credential).await()
-                        userRepository.updateUserPhoneNumber(newPhoneNumber, verificationId, code)
-                        _snackbarMessage.value = "Phone number updated successfully."
-                    } catch (e: Exception) {
-                        _snackbarMessage.value = "Failed to update phone number: ${e.localizedMessage}"
-                    }
-                }
-            } else {
-                _snackbarMessage.value = "Re-authentication failed."
+            try {
+                auth.currentUser?.updatePhoneNumber(credential)?.await()
+                _snackbarMessage.value = "Phone number updated successfully."
+            } catch (e: Exception) {
+                _snackbarMessage.value = "Failed to update phone number: ${e.localizedMessage}"
             }
         }
     }
 
-    fun setUseTestPhoneNumber(useTest: Boolean) {
-        _useTestPhoneNumber.value = useTest
-    }
-
-    fun updateUserName(newName: String) {
+    fun verifyPhoneNumber(verificationId: String, code: String, activity: Activity) {
+        val credential = PhoneAuthProvider.getCredential(verificationId, code)
         viewModelScope.launch {
-            val currentUser = userRepository.getCurrentUser() ?: return@launch
-            val updatedUser = currentUser.copy(name = newName)
-            if (userRepository.updateUserFirstName(updatedUser)) {
-                fetchAllUsers()
-                _snackbarMessage.value = "Name updated successfully."
-            } else {
-                _snackbarMessage.value = "Failed to update name."
-            }
-        }
-    }
-
-    fun updateUserSurname(newSurname: String) {
-        viewModelScope.launch {
-            val currentUser = userRepository.getCurrentUser() ?: return@launch
-            val updatedUser = currentUser.copy(surname = newSurname)
-            if (userRepository.updateUserFirstName(updatedUser)) {
-                fetchAllUsers()
-                _snackbarMessage.value = "Surname updated successfully."
-            } else {
-                _snackbarMessage.value = "Failed to update surname."
+            try {
+                auth.currentUser?.updatePhoneNumber(credential)?.await()
+                _snackbarMessage.value = "Phone number verified successfully."
+            } catch (e: Exception) {
+                _snackbarMessage.value = "Failed to verify phone number: ${e.localizedMessage}"
             }
         }
     }
@@ -268,5 +267,35 @@ class AuthViewModel @Inject constructor(
             .setCallbacks(callbacks)
             .build()
         PhoneAuthProvider.verifyPhoneNumber(options)
+    }
+
+    fun setUseTestPhoneNumber(useTest: Boolean) {
+        _useTestPhoneNumber.value = useTest
+    }
+
+    fun updateUserName(newName: String) {
+        viewModelScope.launch {
+            val currentUser = userRepository.getCurrentUser() ?: return@launch
+            val updatedUser = currentUser.copy(name = newName)
+            if (userRepository.updateUserFirstName(updatedUser)) {
+                fetchAllUsers()
+                _snackbarMessage.value = "Name updated successfully."
+            } else {
+                _snackbarMessage.value = "Failed to update name."
+            }
+        }
+    }
+
+    fun updateUserSurname(newSurname: String) {
+        viewModelScope.launch {
+            val currentUser = userRepository.getCurrentUser() ?: return@launch
+            val updatedUser = currentUser.copy(surname = newSurname)
+            if (userRepository.updateUserFirstName(updatedUser)) {
+                fetchAllUsers()
+                _snackbarMessage.value = "Surname updated successfully."
+            } else {
+                _snackbarMessage.value = "Failed to update surname."
+            }
+        }
     }
 }

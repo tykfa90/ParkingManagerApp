@@ -1,10 +1,12 @@
-package com.parkingmanagerapp.view.regUserPanel.userOwnAccountManagemenet
+package com.parkingmanagerapp.view.regUserPanel
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
@@ -38,12 +40,16 @@ fun RegisterScreen(
     viewModel: AuthViewModel = hiltViewModel(),
     snackbarHostState: SnackbarHostState
 ) {
-    var name by remember { mutableStateOf("") }
+    var firstName by remember { mutableStateOf("") }
+    var surname by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
+    var countryCode by remember { mutableStateOf("") }
+    var phoneNumber by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
     var confirmPasswordVisible by remember { mutableStateOf(false) }
+    var errorMessage by remember { mutableStateOf("") }
     val signInStatus by viewModel.signInStatus.collectAsState()
     val snackbarMessage by viewModel.snackbarMessage.collectAsState()
 
@@ -70,9 +76,19 @@ fun RegisterScreen(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             OutlinedTextField(
-                value = name,
-                onValueChange = { name = it },
-                label = { Text("Name") },
+                value = firstName,
+                onValueChange = { firstName = it },
+                label = { Text("First Name") },
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            OutlinedTextField(
+                value = surname,
+                onValueChange = { surname = it },
+                label = { Text("Surname") },
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth()
             )
@@ -86,6 +102,28 @@ fun RegisterScreen(
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth()
             )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Row(modifier = Modifier.fillMaxWidth()) {
+                OutlinedTextField(
+                    value = countryCode,
+                    onValueChange = { countryCode = it },
+                    label = { Text("Country Code") },
+                    singleLine = true,
+                    modifier = Modifier.weight(1f)
+                )
+
+                Spacer(modifier = Modifier.width(8.dp))
+
+                OutlinedTextField(
+                    value = phoneNumber,
+                    onValueChange = { phoneNumber = it },
+                    label = { Text("Phone Number") },
+                    singleLine = true,
+                    modifier = Modifier.weight(3f)
+                )
+            }
 
             Spacer(modifier = Modifier.height(8.dp))
 
@@ -128,12 +166,34 @@ fun RegisterScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
+            if (errorMessage.isNotEmpty()) {
+                Text(text = errorMessage, color = androidx.compose.ui.graphics.Color.Red)
+                Spacer(modifier = Modifier.height(8.dp))
+            }
+
             Button(
                 onClick = {
-                    if (password == confirmPassword) {
-                        viewModel.registerWithEmailAndPassword(email, password, name)
-                    } else {
-                        viewModel.setSnackbarMessage("Passwords do not match")
+                    when {
+                        firstName.isBlank() -> errorMessage = "First name is required."
+                        surname.isBlank() -> errorMessage = "Surname is required."
+                        email.isBlank() -> errorMessage = "Email is required."
+                        countryCode.isBlank() -> errorMessage = "Country code is required."
+                        phoneNumber.isBlank() -> errorMessage = "Phone number is required."
+                        password.isBlank() -> errorMessage = "Password is required."
+                        confirmPassword.isBlank() -> errorMessage = "Confirm password is required."
+                        password != confirmPassword -> errorMessage = "Passwords do not match."
+                        else -> {
+                            errorMessage = ""
+                            val fullPhoneNumber = "+$countryCode$phoneNumber"
+                            viewModel.registerWithEmailAndPassword(
+                                firstName,
+                                surname,
+                                email,
+                                fullPhoneNumber,
+                                password,
+                                confirmPassword
+                            )
+                        }
                     }
                 },
                 modifier = Modifier.fillMaxWidth()
