@@ -96,7 +96,7 @@ fun EditEmailDialog(
             Button(
                 onClick = {
                     if (verificationId != null || (useTestPhoneNumber && phoneNumber == "+48 111111111")) {
-                        viewModel.updateUserPhoneNumber(password, phoneNumber, verificationId ?: "test-verification-id", verificationCode)
+                        // Update email
                         viewModel.updateUserEmail(password, newEmail)
                     } else {
                         viewModel.sendVerificationCode(phoneNumber, activity)

@@ -31,8 +31,7 @@ import com.parkingmanagerapp.viewModel.AuthViewModel
 @Composable
 fun EditPhoneNumberDialog(
     onDismiss: () -> Unit,
-    snackbarHostState: SnackbarHostState,
-    viewModel: AuthViewModel = hiltViewModel()
+    snackbarHostState: SnackbarHostState,viewModel: AuthViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current
     val activity = context as Activity
@@ -42,6 +41,9 @@ fun EditPhoneNumberDialog(
     val verificationId by viewModel.verificationId.collectAsState()
     val useTestPhoneNumber by viewModel.useTestPhoneNumber.collectAsState()
 
+    // Check whether test phone number is used
+    val isUsingTestNumber = useTestPhoneNumber && newPhoneNumber == "+48 111111111"
+
     LaunchedEffect(viewModel.snackbarMessage) {
         viewModel.snackbarMessage.value?.let { message ->
             snackbarHostState.showSnackbar(message)
@@ -49,8 +51,7 @@ fun EditPhoneNumberDialog(
         }
     }
 
-    AlertDialog(
-        onDismissRequest = onDismiss,
+    AlertDialog(onDismissRequest = onDismiss,
         title = { Text(text = "Edit Phone Number") },
         text = {
             Column {
@@ -67,7 +68,8 @@ fun EditPhoneNumberDialog(
                     label = { Text(text = "New Phone Number") },
                     modifier = Modifier.fillMaxWidth()
                 )
-                if (useTestPhoneNumber && newPhoneNumber == "+48 111111111") {
+
+                if (isUsingTestNumber) {
                     Text("Using test phone number. Enter verification code: 111111")
                 }
                 OutlinedTextField(
@@ -75,7 +77,7 @@ fun EditPhoneNumberDialog(
                     onValueChange = { verificationCode = it },
                     label = { Text(text = "Verification Code") },
                     modifier = Modifier.fillMaxWidth(),
-                    enabled = !(useTestPhoneNumber && newPhoneNumber == "+48 111111111")
+                    enabled = !isUsingTestNumber
                 )
                 Row(
                     modifier = Modifier.padding(top = 8.dp),
@@ -93,12 +95,20 @@ fun EditPhoneNumberDialog(
         confirmButton = {
             Button(
                 onClick = {
-                    if (verificationId != null || (useTestPhoneNumber && newPhoneNumber == "+48 111111111")) {
-                        viewModel.updateUserPhoneNumber(password, newPhoneNumber, verificationId ?: "test-verification-id", verificationCode)
+                    // Determines verificationIdToUse for better readability
+                    val verificationIdToUse = getVerificationIdToUse(useTestPhoneNumber, newPhoneNumber)
+
+                    if (verificationIdToUse != null) {
+                        viewModel.updateUserPhoneNumber(
+                            password,
+                            newPhoneNumber,
+                            verificationIdToUse,
+                            verificationCode
+                        )
+                        onDismiss()
                     } else {
                         viewModel.sendVerificationCode(newPhoneNumber, activity)
                     }
-                    onDismiss()
                 },
                 modifier = Modifier.fillMaxWidth()
             ) {
@@ -111,4 +121,13 @@ fun EditPhoneNumberDialog(
             }
         }
     )
+}
+
+// Helper function to determine verificationIdToUse
+private fun getVerificationIdToUse(useTestPhoneNumber: Boolean, newPhoneNumber: String): String? {
+    return if (useTestPhoneNumber && newPhoneNumber == "+48 111111111") {
+        "111111"
+    } else {
+        null
+    }
 }

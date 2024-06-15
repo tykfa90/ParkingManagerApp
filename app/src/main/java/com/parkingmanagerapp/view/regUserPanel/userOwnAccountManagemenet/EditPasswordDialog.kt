@@ -102,7 +102,6 @@ fun EditPasswordDialog(
             Button(
                 onClick = {
                     if (verificationId != null || (useTestPhoneNumber && newPhoneNumber == "+48 111111111")) {
-                        viewModel.updateUserPhoneNumber(password, newPhoneNumber, verificationId ?: "test-verification-id", verificationCode)
                         viewModel.updateUserPassword(password, newPassword)
                     } else {
                         viewModel.sendVerificationCode(newPhoneNumber, activity)
