@@ -41,7 +41,7 @@ class AuthViewModel @Inject constructor(
     private val _verificationId = MutableStateFlow<String?>(null)
     val verificationId = _verificationId.asStateFlow()
 
-    private val _useTestPhoneNumber = MutableStateFlow<Boolean>(false)
+    private val _useTestPhoneNumber = MutableStateFlow(false)
     val useTestPhoneNumber = _useTestPhoneNumber.asStateFlow()
 
     init {

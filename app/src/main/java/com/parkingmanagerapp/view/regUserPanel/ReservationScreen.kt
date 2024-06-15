@@ -1,16 +1,12 @@
 package com.parkingmanagerapp.view.regUserPanel
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.SnackbarHostState
@@ -26,8 +22,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.parkingmanagerapp.model.ParkingSlot
 import com.parkingmanagerapp.ui.theme.ListScreenLayout
 import com.parkingmanagerapp.ui.theme.StandardScreenLayout
+import com.parkingmanagerapp.view.adminPanel.parkingSlotManagement.UnifiedParkingSlotItem
 import com.parkingmanagerapp.viewModel.AuthViewModel
 import com.parkingmanagerapp.viewModel.ReservationViewModel
 import java.text.SimpleDateFormat
@@ -44,6 +42,8 @@ fun ReservationScreen(
     var endDate by remember { mutableStateOf("") }
     val parkingSlots by reservationViewModel.parkingSlots.collectAsState()
     val user by authViewModel.user.collectAsState()
+    var selectedSlot by remember { mutableStateOf<ParkingSlot?>(null) }
+    var showDialog by remember { mutableStateOf(false) }
 
     StandardScreenLayout(
         title = "Reservations",
@@ -94,26 +94,31 @@ fun ReservationScreen(
                     listItems = parkingSlots,
                     isAdminContext = false,
                     onEdit = {}, // No-op for regular users
-                    onDelete = {} // No-op for regular users
-                )
-
-                LazyColumn {
-                    items(parkingSlots) { slot ->
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(8.dp)
-                                .clickable {
-                                    if (user != null) {
-                                        navController.navigate("reservationConfirmation/${slot.parkingSlotID}/${user!!.uid}")
-                                    }
-                                }
-                        ) {
-                            Text(text = "Parking slot reserved: ${slot.parkingSlotLabel}")
-                        }
+                    onDelete = {}, // No-op for regular users
+                    itemContent = { item, _, _, _, modifier ->
+                        UnifiedParkingSlotItem(
+                            parkingSlot = item,
+                            buttonText = "Reserve",
+                            onButtonClick = {
+                                selectedSlot = item
+                                showDialog = true
+                            },
+                            modifier = modifier
+                        )
                     }
-                }
+                )
             }
         }
+    }
+
+    if (showDialog && selectedSlot != null && user != null) {
+        ReservationConfirmationDialog(
+            navController = navController,
+            parkingSlotID = selectedSlot!!.parkingSlotID,
+            userID = user!!.uid,
+            startDate = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).parse(startDate)!!,
+            endDate = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).parse(endDate)!!,
+            viewModel = reservationViewModel
+        )
     }
 }

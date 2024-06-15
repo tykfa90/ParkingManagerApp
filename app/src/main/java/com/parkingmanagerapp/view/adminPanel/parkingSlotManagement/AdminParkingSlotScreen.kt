@@ -52,6 +52,20 @@ fun AdminParkingSlotScreen(
                 onDelete = {
                     selectedSlot = it
                     showDeleteDialog = true
+                },
+                itemContent = { item, isAdmin, onEdit, onDelete, modifier ->
+                    UnifiedParkingSlotItem(
+                        parkingSlot = item,
+                        buttonText = if (isAdmin) "Edit" else "Reserve",
+                        onButtonClick = {
+                            if (isAdmin) {
+                                onEdit(item)
+                            } else {
+                                // Handle reserve action
+                            }
+                        },
+                        modifier = modifier
+                    )
                 }
             )
 
