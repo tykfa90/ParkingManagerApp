@@ -41,7 +41,7 @@ fun ParkingSlotItem(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column {
-                Text(text = parkingSlot.slotLabel, style = MaterialTheme.typography.bodyLarge)
+                Text(text = parkingSlot.parkingSlotLabel, style = MaterialTheme.typography.bodyLarge)
                 Text(text = if (parkingSlot.isOccupied) "Occupied" else "Available", style = MaterialTheme.typography.bodyMedium)
                 Text(text = parkingSlot.annotation, style = MaterialTheme.typography.bodyMedium)
             }

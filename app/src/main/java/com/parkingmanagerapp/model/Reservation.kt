@@ -4,8 +4,8 @@ import java.util.Date
 
 data class Reservation(
     val reservationID: String,
-    val parkingSpaceID: String,
-    val userID: User,
+    val parkingSlotID: String,
+    val userID: String,
     val licensePlate: String,
     val reservationStart: Date,
     val reservationEnd: Date

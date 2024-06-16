@@ -1,4 +1,4 @@
-package com.parkingmanagerapp.view.regUserPanel.userOwnAccountManagemenet
+package com.parkingmanagerapp.view.regUserPanel.userOwnAccountManagement
 
 import android.app.Activity
 import androidx.compose.foundation.layout.Column

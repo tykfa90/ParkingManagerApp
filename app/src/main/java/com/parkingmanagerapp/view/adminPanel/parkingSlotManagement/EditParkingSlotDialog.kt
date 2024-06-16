@@ -21,7 +21,7 @@ fun EditParkingSlotDialog(
     onDismiss: () -> Unit,
     onSave: (ParkingSlot) -> Unit
 ) {
-    var slotLabel by remember { mutableStateOf(parkingSlot.slotLabel) }
+    var slotLabel by remember { mutableStateOf(parkingSlot.parkingSlotLabel) }
     var isOccupied by remember { mutableStateOf(parkingSlot.isOccupied) }
     var annotation by remember { mutableStateOf(parkingSlot.annotation) }
 
@@ -53,7 +53,7 @@ fun EditParkingSlotDialog(
             Button(onClick = {
                 onSave(
                     parkingSlot.copy(
-                        slotLabel = slotLabel,
+                        parkingSlotLabel = slotLabel,
                         isOccupied = isOccupied,
                         annotation = annotation
                     )

@@ -11,10 +11,10 @@ import com.parkingmanagerapp.view.adminPanel.parkingSlotManagement.AdminParkingS
 import com.parkingmanagerapp.view.adminPanel.userManagement.AdminUserAccountScreen
 import com.parkingmanagerapp.view.regUserPanel.MainMenuScreen
 import com.parkingmanagerapp.view.regUserPanel.ParkingSlotScreen
+import com.parkingmanagerapp.view.regUserPanel.RegisterScreen
+import com.parkingmanagerapp.view.regUserPanel.SignInScreen
 import com.parkingmanagerapp.view.regUserPanel.SplashScreen
-import com.parkingmanagerapp.view.regUserPanel.userOwnAccountManagemenet.RegisterScreen
-import com.parkingmanagerapp.view.regUserPanel.userOwnAccountManagemenet.SignInScreen
-import com.parkingmanagerapp.view.regUserPanel.userOwnAccountManagemenet.UserProfileScreen
+import com.parkingmanagerapp.view.regUserPanel.userOwnAccountManagement.UserProfileScreen
 
 @Composable
 fun AppNavHost(navController: NavHostController, snackbarHostState: SnackbarHostState) {

@@ -83,7 +83,7 @@ fun AdminParkingSlotScreen(
                 parkingSlot = selectedSlot!!,
                 onDismiss = { showEditDialog = false },
                 onSave = { updatedSlot ->
-                    viewModel.modifyParkingSlot(updatedSlot.slotID, updatedSlot)
+                    viewModel.modifyParkingSlot(updatedSlot.parkingSlotID, updatedSlot)
                     showEditDialog = false
                 }
             )
@@ -95,7 +95,7 @@ fun AdminParkingSlotScreen(
                 parkingSlot = selectedSlot!!,
                 onDismiss = { showDeleteDialog = false },
                 onConfirm = {
-                    viewModel.removeParkingSlot(selectedSlot!!.slotID)
+                    viewModel.removeParkingSlot(selectedSlot!!.parkingSlotID)
                     showDeleteDialog = false
                 }
             )

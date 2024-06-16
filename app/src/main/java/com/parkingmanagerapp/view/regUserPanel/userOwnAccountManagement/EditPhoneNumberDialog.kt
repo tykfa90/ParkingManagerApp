@@ -1,4 +1,4 @@
-package com.parkingmanagerapp.view.regUserPanel.userOwnAccountManagemenet
+package com.parkingmanagerapp.view.regUserPanel.userOwnAccountManagement
 
 import android.app.Activity
 import androidx.compose.foundation.layout.Column
@@ -29,20 +29,19 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.parkingmanagerapp.viewModel.AuthViewModel
 
 @Composable
-fun EditEmailDialog(
+fun EditPhoneNumberDialog(
     onDismiss: () -> Unit,
-    snackbarHostState: SnackbarHostState,
-    viewModel: AuthViewModel = hiltViewModel()
+    snackbarHostState: SnackbarHostState,viewModel: AuthViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current
     val activity = context as Activity
-    val currentEmail = viewModel.user.value?.email ?: ""
-    var newEmail by remember { mutableStateOf(currentEmail) }
     var password by remember { mutableStateOf("") }
+    var newPhoneNumber by remember { mutableStateOf("") }
     var verificationCode by remember { mutableStateOf("") }
-    val verificationId by viewModel.verificationId.collectAsState()
     val useTestPhoneNumber by viewModel.useTestPhoneNumber.collectAsState()
-    val phoneNumber = viewModel.user.value?.phoneNumber ?: ""
+
+    // Check whether test phone number is used
+    val isUsingTestNumber = useTestPhoneNumber && newPhoneNumber == "+48 111111111"
 
     LaunchedEffect(viewModel.snackbarMessage) {
         viewModel.snackbarMessage.value?.let { message ->
@@ -51,17 +50,10 @@ fun EditEmailDialog(
         }
     }
 
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text(text = "Edit Email") },
+    AlertDialog(onDismissRequest = onDismiss,
+        title = { Text(text = "Edit Phone Number") },
         text = {
             Column {
-                OutlinedTextField(
-                    value = newEmail,
-                    onValueChange = { newEmail = it },
-                    label = { Text(text = "New Email") },
-                    modifier = Modifier.fillMaxWidth()
-                )
                 OutlinedTextField(
                     value = password,
                     onValueChange = { password = it },
@@ -69,7 +61,14 @@ fun EditEmailDialog(
                     modifier = Modifier.fillMaxWidth(),
                     visualTransformation = PasswordVisualTransformation()
                 )
-                if (useTestPhoneNumber && phoneNumber == "+48 111111111") {
+                OutlinedTextField(
+                    value = newPhoneNumber,
+                    onValueChange = { newPhoneNumber = it },
+                    label = { Text(text = "New Phone Number") },
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                if (isUsingTestNumber) {
                     Text("Using test phone number. Enter verification code: 111111")
                 }
                 OutlinedTextField(
@@ -77,7 +76,7 @@ fun EditEmailDialog(
                     onValueChange = { verificationCode = it },
                     label = { Text(text = "Verification Code") },
                     modifier = Modifier.fillMaxWidth(),
-                    enabled = !(useTestPhoneNumber && phoneNumber == "+48 111111111")
+                    enabled = !isUsingTestNumber
                 )
                 Row(
                     modifier = Modifier.padding(top = 8.dp),
@@ -95,17 +94,24 @@ fun EditEmailDialog(
         confirmButton = {
             Button(
                 onClick = {
-                    if (verificationId != null || (useTestPhoneNumber && phoneNumber == "+48 111111111")) {
-                        // Update email
-                        viewModel.updateUserEmail(password, newEmail)
+                    // Determines verificationIdToUse for better readability
+                    val verificationIdToUse = getVerificationIdToUse(useTestPhoneNumber, newPhoneNumber)
+
+                    if (verificationIdToUse != null) {
+                        viewModel.updateUserPhoneNumber(
+                            password,
+                            newPhoneNumber,
+                            verificationIdToUse,
+                            verificationCode
+                        )
+                        onDismiss()
                     } else {
-                        viewModel.sendVerificationCode(phoneNumber, activity)
+                        viewModel.sendVerificationCode(newPhoneNumber, activity)
                     }
-                    onDismiss()
                 },
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text("Update Email")
+                Text("Update Phone Number")
             }
         },
         dismissButton = {
@@ -114,4 +120,13 @@ fun EditEmailDialog(
             }
         }
     )
+}
+
+// Helper function to determine verificationIdToUse
+private fun getVerificationIdToUse(useTestPhoneNumber: Boolean, newPhoneNumber: String): String? {
+    return if (useTestPhoneNumber && newPhoneNumber == "+48 111111111") {
+        "111111"
+    } else {
+        null
+    }
 }
