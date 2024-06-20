@@ -3,10 +3,10 @@ package com.parkingmanagerapp.model
 import java.util.Date
 
 data class Reservation(
-    val reservationID: String,
-    val parkingSlotID: String,
-    val userID: String,
-    val licensePlate: String,
-    val reservationStart: Date,
-    val reservationEnd: Date
+    var reservationID: String = "",
+    var parkingSlotID: String = "",
+    var userID: String = "",
+    var licensePlate: String = "",
+    var reservationStart: Date = Date(),
+    var reservationEnd: Date = Date()
 )

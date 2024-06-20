@@ -36,10 +36,10 @@ fun MainMenuScreen(navController: NavController, snackbarHostState: SnackbarHost
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Button(
-                onClick = { navController.navigate(Screen.ParkingSlots.route) },
+                onClick = { navController.navigate(Screen.Reservation.route) },
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text("View Parking Slots")
+                Text("Parking Reservation")
             }
 
             Spacer(modifier = Modifier.height(16.dp))

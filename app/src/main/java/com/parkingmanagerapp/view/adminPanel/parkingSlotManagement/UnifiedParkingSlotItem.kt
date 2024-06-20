@@ -22,7 +22,6 @@ fun UnifiedParkingSlotItem(
     Card(modifier = modifier.padding(8.dp)) {
         Column(modifier = Modifier.padding(16.dp)) {
             Text(text = "Slot Label: ${parkingSlot.parkingSlotLabel}")
-            Text(text = "Occupied: ${if (parkingSlot.isOccupied) "Yes" else "No"}")
             Text(text = "Annotation: ${parkingSlot.annotation}")
 
             Spacer(modifier = Modifier.height(8.dp))

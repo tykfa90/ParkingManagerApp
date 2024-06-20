@@ -1,4 +1,4 @@
-package com.parkingmanagerapp.view.regUserPanel
+package com.parkingmanagerapp.view.regUserPanel.reservationSystem
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -16,7 +16,9 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.parkingmanagerapp.model.Reservation
 import com.parkingmanagerapp.viewModel.ReservationViewModel
+import java.text.SimpleDateFormat
 import java.util.Date
+import java.util.Locale
 import java.util.UUID
 
 @Composable
@@ -30,6 +32,7 @@ fun ReservationConfirmationDialog(
 ) {
     var licensePlate by remember { mutableStateOf("") }
     var showDialog by remember { mutableStateOf(true) }
+    val dateFormat = remember { SimpleDateFormat("dd.MM.yy", Locale.getDefault()) }
 
     if (showDialog) {
         AlertDialog(
@@ -37,14 +40,17 @@ fun ReservationConfirmationDialog(
             title = { Text("Confirm Reservation") },
             text = {
                 Column {
-                    Text(text = "Parking Slot ID: $parkingSlotID")
-                    Text(text = "Start Date: $startDate")
-                    Text(text = "End Date: $endDate")
+                    Text(text = "Start Date: ${dateFormat.format(startDate)}")
+                    Text(text = "End Date: ${dateFormat.format(endDate)}")
                     OutlinedTextField(
                         value = licensePlate,
-                        onValueChange = { licensePlate = it },
+                        onValueChange = { input ->
+                            // Use unified transformation for filtering and uppercase conversion
+                            licensePlate = LicensePlateTransformation.transform(input)
+                        },
                         label = { Text("License Plate") },
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth(),
+                        visualTransformation = LicensePlateTransformation()
                     )
                 }
             },
