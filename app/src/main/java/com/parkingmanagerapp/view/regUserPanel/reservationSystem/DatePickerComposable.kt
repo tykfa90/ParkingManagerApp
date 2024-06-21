@@ -13,11 +13,9 @@ fun DatePickerComposable(
     showDialog: Boolean,
     onDismissRequest: () -> Unit
 ) {
-    val context = LocalContext.current
     if (showDialog) {
-        val calendar = Calendar.getInstance().apply {
-            time = initialDate
-        }
+        val context = LocalContext.current
+        val calendar = Calendar.getInstance().apply { time = initialDate }
         DatePickerDialog(
             context,
             { _, year, month, dayOfMonth ->

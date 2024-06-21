@@ -12,7 +12,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.parkingmanagerapp.model.Reservation
 import com.parkingmanagerapp.viewModel.ReservationViewModel
@@ -25,14 +24,18 @@ import java.util.UUID
 fun ReservationConfirmationDialog(
     navController: NavController,
     parkingSlotID: String,
+    parkingSlotLabel: String,
     userID: String,
     startDate: Date,
     endDate: Date,
-    viewModel: ReservationViewModel = hiltViewModel()
+    viewModel: ReservationViewModel
 ) {
     var licensePlate by remember { mutableStateOf("") }
     var showDialog by remember { mutableStateOf(true) }
-    val dateFormat = remember { SimpleDateFormat("dd.MM.yy", Locale.getDefault()) }
+
+    val dateFormat = SimpleDateFormat("dd.MM.yy", Locale.getDefault())
+    val startDateFormatted = dateFormat.format(startDate)
+    val endDateFormatted = dateFormat.format(endDate)
 
     if (showDialog) {
         AlertDialog(
@@ -40,26 +43,22 @@ fun ReservationConfirmationDialog(
             title = { Text("Confirm Reservation") },
             text = {
                 Column {
-                    Text(text = "Start Date: ${dateFormat.format(startDate)}")
-                    Text(text = "End Date: ${dateFormat.format(endDate)}")
+                    Text(text = "Parking Slot: $parkingSlotLabel")
+                    Text(text = "Start Date: $startDateFormatted")
+                    Text(text = "End Date: $endDateFormatted")
                     OutlinedTextField(
                         value = licensePlate,
-                        onValueChange = { input ->
-                            // Use unified transformation for filtering and uppercase conversion
-                            licensePlate = LicensePlateTransformation.transform(input)
-                        },
+                        onValueChange = { licensePlate = it.uppercase().filter { char -> char.isLetterOrDigit() } },
                         label = { Text("License Plate") },
-                        modifier = Modifier.fillMaxWidth(),
-                        visualTransformation = LicensePlateTransformation()
+                        modifier = Modifier.fillMaxWidth()
                     )
                 }
             },
             confirmButton = {
                 Button(
                     onClick = {
-                        val reservationID = UUID.randomUUID().toString()
                         val reservation = Reservation(
-                            reservationID = reservationID,
+                            reservationID = UUID.randomUUID().toString(),
                             parkingSlotID = parkingSlotID,
                             userID = userID,
                             licensePlate = licensePlate,
@@ -76,12 +75,7 @@ fun ReservationConfirmationDialog(
                 }
             },
             dismissButton = {
-                Button(
-                    onClick = {
-                        showDialog = false
-                        navController.popBackStack()
-                    }
-                ) {
+                Button(onClick = { showDialog = false }) {
                     Text("Cancel")
                 }
             }

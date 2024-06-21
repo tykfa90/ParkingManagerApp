@@ -2,53 +2,42 @@ package com.parkingmanagerapp.viewModel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.google.firebase.firestore.FirebaseFirestore
 import com.parkingmanagerapp.model.ParkingSlot
 import com.parkingmanagerapp.model.Reservation
+import com.parkingmanagerapp.repository.ReservationsRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.tasks.await
 import java.util.Date
 import javax.inject.Inject
 
 @HiltViewModel
 class ReservationViewModel @Inject constructor(
-    private val db: FirebaseFirestore
+    private val reservationRepository: ReservationsRepository
 ) : ViewModel() {
-    private val _parkingSlots = MutableStateFlow<List<ParkingSlot>>(emptyList())
-    val parkingSlots: StateFlow<List<ParkingSlot>> = _parkingSlots
-
     private val _reservations = MutableStateFlow<List<Reservation>>(emptyList())
+    private val _userReservations = MutableStateFlow<List<Reservation>>(emptyList())
+    val userReservations: StateFlow<List<Reservation>> = _userReservations
 
     init {
-        fetchParkingSlots()
         fetchReservations()
-    }
-
-    private fun fetchParkingSlots() {
-        viewModelScope.launch {
-            val snapshot = db.collection("parkingSlots").get().await()
-            val slots = snapshot.documents.map { doc ->
-                doc.toObject(ParkingSlot::class.java)!!
-            }
-            _parkingSlots.value = slots
-        }
     }
 
     private fun fetchReservations() {
         viewModelScope.launch {
-            val snapshot = db.collection("reservations").get().await()
-            val res = snapshot.documents.map { doc ->
-                doc.toObject(Reservation::class.java)!!
-            }
-            _reservations.value = res
+            _reservations.value = reservationRepository.getAllReservations()
         }
     }
 
-    fun filterAvailableSlots(startDate: Date, endDate: Date) {
-        val availableSlots = _parkingSlots.value.filter { slot ->
+    fun loadUserReservations(userID: String) {
+        viewModelScope.launch {
+            _userReservations.value = reservationRepository.getUserReservations(userID)
+        }
+    }
+
+    fun filterAvailableSlots(startDate: Date, endDate: Date, parkingSlots: List<ParkingSlot>): List<ParkingSlot> {
+        return parkingSlots.filter { slot ->
             _reservations.value.none { res ->
                 res.parkingSlotID == slot.parkingSlotID &&
                         ((startDate in res.reservationStart..res.reservationEnd) ||
@@ -57,7 +46,6 @@ class ReservationViewModel @Inject constructor(
                                 (res.reservationEnd in startDate..endDate))
             }
         }
-        _parkingSlots.value = availableSlots
     }
 
     fun createReservation(reservation: Reservation): Boolean {
@@ -71,12 +59,20 @@ class ReservationViewModel @Inject constructor(
 
         return if (!overlappingReservation) {
             viewModelScope.launch {
-                db.collection("reservations").add(reservation).await()
+                reservationRepository.addReservation(reservation)
                 fetchReservations() // Refresh reservations
             }
             true
         } else {
             false
+        }
+    }
+
+    fun cancelReservation(reservationID: String) {
+        viewModelScope.launch {
+            reservationRepository.deleteReservation(reservationID)
+            fetchReservations() // Refresh reservations
+            loadUserReservations(_userReservations.value.firstOrNull()?.userID ?: "")
         }
     }
 }

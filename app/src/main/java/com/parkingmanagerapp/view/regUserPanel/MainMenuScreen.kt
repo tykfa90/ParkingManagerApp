@@ -27,7 +27,7 @@ fun MainMenuScreen(navController: NavController, snackbarHostState: SnackbarHost
     StandardScreenLayout(
         title = "Main Menu",
         snackbarHostState = snackbarHostState
-    ) { paddingValues ->
+    ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -40,6 +40,15 @@ fun MainMenuScreen(navController: NavController, snackbarHostState: SnackbarHost
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text("Parking Reservation")
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Button(
+                onClick = { navController.navigate(Screen.MyReservations.route) },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("My Reservations")
             }
 
             Spacer(modifier = Modifier.height(16.dp))
