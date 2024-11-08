@@ -30,25 +30,16 @@ class ParkingSlotRepository @Inject constructor(
     }
 
     // Fetches all parking slots from database as a list
-    suspend fun getAllParkingSlots(): List<ParkingSlot> = try {
-        val parkingSlots = parkingSlotCollection
-            .get()
-            .await()
-            .documents
-            .mapNotNull { document ->
-                document.toObject(ParkingSlot::class.java)
-            }
-
-        parkingSlots
-    } catch (e: Exception) {
-        Log.e(
-            "ParkingSlotRepository",
-            "Error while fetching all parking slots: ${e.localizedMessage}"
-        )
-        emptyList()
+    suspend fun getAllParkingSlots(): Result<List<ParkingSlot>> {
+        return try {
+            val snapshot = db.collection("parkingSlots").get().await()
+            Result.success(snapshot.toObjects(ParkingSlot::class.java))
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
     }
 
-    //
+    // Updates the selected parking spot
     suspend fun updateParkingSlot(slotID: String, updatedSlot: ParkingSlot): Result<Unit> {
         return try {
             parkingSlotCollection.document(slotID)

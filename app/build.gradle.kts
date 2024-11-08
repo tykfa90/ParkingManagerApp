@@ -1,15 +1,16 @@
 plugins {
     id("com.android.application")
-    id("kotlin-android")
+    id("org.jetbrains.kotlin.android") version "2.0.21"
     id("com.google.gms.google-services")
     id("dagger.hilt.android.plugin")
     id("com.google.devtools.ksp")
+    alias(libs.plugins.compose.compiler)
 }
 
 
 android {
     namespace = "com.parkingmanagerapp"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.parkingmanagerapp"
@@ -26,7 +27,7 @@ android {
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
         create("dev") {
-            initWith(getByName("dev"))
+            initWith(getByName("release"))
             isMinifyEnabled = true
             isShrinkResources = true
             isDebuggable = true
@@ -42,6 +43,7 @@ android {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
+
     kotlinOptions {
         jvmTarget = "11"
     }
@@ -49,7 +51,7 @@ android {
         compose = true
     }
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.10"
+        kotlinCompilerExtensionVersion = "1.5.0"
     }
     packaging {
         resources {
@@ -59,8 +61,8 @@ android {
 }
 
 dependencies {
-
-    implementation("androidx.core:core-ktx:1.13.1")
+    // Core + UI Dependencies
+    implementation("androidx.core:core-ktx:1.15.0")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.7")
     implementation("androidx.activity:activity-compose:1.9.3")
     implementation(platform("androidx.compose:compose-bom:2024.10.01"))
@@ -82,7 +84,7 @@ dependencies {
     implementation("androidx.compose.material:material-icons-core:1.7.5")
     implementation("androidx.compose.material:material-icons-extended:1.7.5")
 
-
+    // Test Dependencies
     testImplementation("io.mockk:mockk:1.12.0")
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.8.0")
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.10.0")
@@ -92,6 +94,7 @@ dependencies {
     testImplementation("com.google.dagger:hilt-android-testing:2.51")
     kspTest("com.google.dagger:hilt-compiler:2.51")
 
+    // Android Test Dependencies
     androidTestImplementation("androidx.test.ext:junit:1.2.1")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.6.1")
     androidTestImplementation(platform("androidx.compose:compose-bom:2024.10.01"))
@@ -102,7 +105,7 @@ dependencies {
     androidTestImplementation("com.google.dagger:hilt-android-testing:2.51")
     kspAndroidTest("com.google.dagger:hilt-compiler:2.51")
 
-
+    // Debug Dependencies
     debugImplementation("androidx.compose.ui:ui-tooling")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
 }
