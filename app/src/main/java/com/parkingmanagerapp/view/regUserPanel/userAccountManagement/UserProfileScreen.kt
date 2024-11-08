@@ -118,3 +118,19 @@ fun UserProfileScreen(
         )
     }
 }
+
+@Composable
+fun UserAttribute(
+    label: String,
+    value: String,
+    onEditClick: (() -> Unit)?
+) {
+    Column(modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)) {
+        Text(text = "$label: $value", modifier = Modifier.padding(bottom = 4.dp))
+        onEditClick?.let {
+            Button(onClick = it, modifier = Modifier.fillMaxWidth()) {
+                Text(text = "Edit $label")
+            }
+        }
+    }
+}

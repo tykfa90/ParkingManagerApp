@@ -1,6 +1,5 @@
 package com.parkingmanagerapp.viewModel
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.parkingmanagerapp.model.ParkingSlot
@@ -15,58 +14,77 @@ import javax.inject.Inject
 @HiltViewModel
 class ParkingSlotViewModel @Inject constructor(private val repository: ParkingSlotRepository) :
     ViewModel() {
+
     private val _parkingSlots = MutableStateFlow<List<ParkingSlot>>(emptyList())
     val parkingSlots: StateFlow<List<ParkingSlot>> = _parkingSlots.asStateFlow()
 
-    // State to indicate if the user is viewing as admin
     private val _isViewingAsAdmin = MutableStateFlow(false)
     val isViewingAsAdmin: StateFlow<Boolean> = _isViewingAsAdmin.asStateFlow()
+
+    private val _errorMessage = MutableStateFlow<String?>(null)
+    val errorMessage: StateFlow<String?> = _errorMessage.asStateFlow()
 
     init {
         fetchParkingSlots()
     }
 
-    // Set viewing context
     fun setViewingContextAsAdmin(isAdmin: Boolean) {
         _isViewingAsAdmin.value = isAdmin
     }
 
     private fun fetchParkingSlots() {
         viewModelScope.launch {
-            _parkingSlots.value = repository.getAllParkingSlots()
+            val result = repository.getAllParkingSlots()
+            result.fold(
+                onSuccess = { slots ->
+                    _parkingSlots.value = slots
+                },
+                onFailure = { error ->
+                    _errorMessage.value = "Failed to fetch parking slots: ${error.localizedMessage}"
+                }
+            )
         }
     }
 
     fun addNewParkingSlot(parkingSlot: ParkingSlot) {
         viewModelScope.launch {
             val result = repository.addParkingSlot(parkingSlot)
-            if (result.isSuccess) {
-                fetchParkingSlots()
-            } else {
-                Log.e("ParkingSlotVM", "Error during adding new parking slot.")
-            }
+            result.fold(
+                onSuccess = {
+                    fetchParkingSlots()
+                },
+                onFailure = { error ->
+                    _errorMessage.value = "Failed to add parking slot: ${error.localizedMessage}"
+                }
+            )
         }
     }
 
     fun modifyParkingSlot(slotID: String, updatedSlot: ParkingSlot) {
         viewModelScope.launch {
             val result = repository.updateParkingSlot(slotID, updatedSlot)
-            if (result.isSuccess) {
-                fetchParkingSlots()
-            } else {
-                Log.e("ParkingSlotVM", "Error during modifying a parking slot.")
-            }
+            result.fold(
+                onSuccess = {
+                    fetchParkingSlots()
+                },
+                onFailure = { error ->
+                    _errorMessage.value = "Failed to modify parking slot: ${error.localizedMessage}"
+                }
+            )
         }
     }
 
     fun removeParkingSlot(slotID: String) {
         viewModelScope.launch {
             val result = repository.deleteParkingSlot(slotID)
-            if (result.isSuccess) {
-                fetchParkingSlots()
-            } else {
-                Log.e("ParkingSlotVM", "Error during removing a parking slot.")
-            }
+            result.fold(
+                onSuccess = {
+                    fetchParkingSlots()
+                },
+                onFailure = { error ->
+                    _errorMessage.value = "Failed to remove parking slot: ${error.localizedMessage}"
+                }
+            )
         }
     }
 }

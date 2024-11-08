@@ -54,7 +54,7 @@ class ReservationsRepository @Inject constructor(
     // Helper function to verify whether there is no overlap existing when creating a new reservation
     private suspend fun checkForOverlap(reservation: Reservation): Boolean {
         val existingReservations = reservationsCollection
-            .whereEqualTo("parkingSlotID", reservation.parkingSpaceID)
+            .whereEqualTo("parkingSlotID", reservation.parkingSlotID)
             .get()
             .await()
             .toObjects(Reservation::class.java)
