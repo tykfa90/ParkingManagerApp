@@ -8,29 +8,22 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.parkingmanagerapp.model.ParkingSlot
-import com.parkingmanagerapp.view.adminPanel.parkingSlotManagement.ParkingSlotItem
 
-// Specialised layout for the lists within the application
 @Composable
-fun ListScreenLayout(
-    listItems: List<ParkingSlot>,
+fun <T> ListScreenLayout(
+    listItems: List<T>,
     isAdminContext: Boolean,
-    onEdit: (ParkingSlot) -> Unit,
-    onDelete: (ParkingSlot) -> Unit
+    onEdit: (T) -> Unit,
+    onDelete: (T) -> Unit,
+    itemContent: @Composable (T, Boolean, (T) -> Unit, (T) -> Unit, Modifier) -> Unit
 ) {
     LazyColumn(
         contentPadding = PaddingValues(16.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
         modifier = Modifier.fillMaxSize()
     ) {
-        items(listItems) { parkingSlot ->
-            ParkingSlotItem(
-                parkingSlot = parkingSlot,
-                isAdminContext = isAdminContext,
-                onEdit = { onEdit(parkingSlot) },
-                onDelete = { onDelete(parkingSlot) }
-            )
+        items(listItems) { item ->
+            itemContent(item, isAdminContext, onEdit, onDelete, Modifier)
         }
     }
 }

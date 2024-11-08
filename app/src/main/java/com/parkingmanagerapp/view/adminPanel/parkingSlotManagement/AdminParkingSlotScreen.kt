@@ -52,6 +52,20 @@ fun AdminParkingSlotScreen(
                 onDelete = {
                     selectedSlot = it
                     showDeleteDialog = true
+                },
+                itemContent = { item, isAdmin, onEdit, onDelete, modifier ->
+                    UnifiedParkingSlotItem(
+                        parkingSlot = item,
+                        buttonText = if (isAdmin) "Edit" else "Reserve",
+                        onButtonClick = {
+                            if (isAdmin) {
+                                onEdit(item)
+                            } else {
+                                // Handle reserve action
+                            }
+                        },
+                        modifier = modifier
+                    )
                 }
             )
 
@@ -83,7 +97,7 @@ fun AdminParkingSlotScreen(
                 parkingSlot = selectedSlot!!,
                 onDismiss = { showEditDialog = false },
                 onSave = { updatedSlot ->
-                    viewModel.modifyParkingSlot(updatedSlot.slotID, updatedSlot)
+                    viewModel.modifyParkingSlot(updatedSlot.parkingSlotID, updatedSlot)
                     showEditDialog = false
                 }
             )
@@ -95,7 +109,7 @@ fun AdminParkingSlotScreen(
                 parkingSlot = selectedSlot!!,
                 onDismiss = { showDeleteDialog = false },
                 onConfirm = {
-                    viewModel.removeParkingSlot(selectedSlot!!.slotID)
+                    viewModel.removeParkingSlot(selectedSlot!!.parkingSlotID)
                     showDeleteDialog = false
                 }
             )
