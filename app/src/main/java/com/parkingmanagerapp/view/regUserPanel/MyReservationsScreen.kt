@@ -37,7 +37,7 @@ fun MyReservationsScreen(
     val parkingSlotLabels by reservationViewModel.parkingSlotLabels.collectAsState()
     var selectedReservation by remember { mutableStateOf<Reservation?>(null) }
     var showDialog by remember { mutableStateOf(false) }
-    val dateFormat = SimpleDateFormat("dd.MM.yy", Locale.getDefault())
+    SimpleDateFormat("dd.MM.yy", Locale.getDefault())
 
     // Fetch user reservations when the user changes
     LaunchedEffect(user) {

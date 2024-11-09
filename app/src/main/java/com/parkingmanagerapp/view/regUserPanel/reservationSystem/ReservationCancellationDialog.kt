@@ -1,11 +1,17 @@
 package com.parkingmanagerapp.view.regUserPanel.reservationSystem
 
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.parkingmanagerapp.model.Reservation
@@ -16,43 +22,45 @@ import java.util.Locale
 fun ReservationCancellationDialog(
     reservation: Reservation,
     slotLabel: String,
-    onCancel: () -> Unit,
+    onCancel: (onComplete: () -> Unit) -> Unit,
     onDismiss: () -> Unit
 ) {
     val dateTimeFormat = SimpleDateFormat("dd.MM.yy HH:mm", Locale.getDefault())
     val formattedStartDate = dateTimeFormat.format(reservation.reservationStart)
     val formattedEndDate = dateTimeFormat.format(reservation.reservationEnd)
 
+    var isLoading by remember { mutableStateOf(false) }
+
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = {
-            Text(text = "Cancel Reservation")
-        },
+        title = { Text("Cancel Reservation") },
         text = {
-            Column(modifier = Modifier.padding(8.dp)) {
+            Column {
                 Text(text = "Parking Slot: $slotLabel")
                 Text(text = "Start Date: $formattedStartDate")
                 Text(text = "End Date: $formattedEndDate")
-                Text(text = "Are you sure you want to cancel this reservation?")
+                if (isLoading) {
+                    Spacer(modifier = Modifier.height(16.dp))
+                    CircularProgressIndicator()
+                }
             }
         },
         confirmButton = {
             Button(
                 onClick = {
-                    onCancel()
-                    // Dismissing the dialog after executing the cancel operation.
-                    onDismiss()
+                    isLoading = true
+                    onCancel {
+                        isLoading = false
+                        onDismiss()
+                    }
                 },
-                modifier = Modifier.padding(horizontal = 8.dp)
+                enabled = !isLoading
             ) {
                 Text("Confirm")
             }
         },
         dismissButton = {
-            Button(
-                onClick = onDismiss,
-                modifier = Modifier.padding(horizontal = 8.dp)
-            ) {
+            Button(onClick = onDismiss, enabled = !isLoading) {
                 Text("Dismiss")
             }
         }

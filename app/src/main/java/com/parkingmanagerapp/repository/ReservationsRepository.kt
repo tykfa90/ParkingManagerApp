@@ -10,7 +10,7 @@ import javax.inject.Singleton
 
 @Singleton
 class ReservationsRepository @Inject constructor(
-    private val firestore: FirebaseFirestore
+    firestore: FirebaseFirestore
 ) {
     private val reservationsCollection = firestore.collection("reservations")
 
