@@ -98,7 +98,8 @@ class ReservationViewModel @Inject constructor(
             viewModelScope.launch {
                 val result = reservationRepository.addReservation(reservation)
                 if (result.isSuccess) {
-                    fetchReservations() // Refresh reservations on success
+                    // Refresh reservations to ensure consistency
+                    fetchReservations()
                 } else {
                     println("Error creating reservation: ${result.exceptionOrNull()?.message}")
                 }
@@ -111,9 +112,14 @@ class ReservationViewModel @Inject constructor(
 
     fun cancelReservation(reservationID: String) {
         viewModelScope.launch {
+            // Fetch latest reservations before deletion to ensure consistency
+            fetchReservations()
+
+            // Proceed with deletion
             val result = reservationRepository.deleteReservation(reservationID)
             if (result.isSuccess) {
-                fetchReservations() // Refresh reservations on success
+                // Refresh reservations on success to reflect the current state
+                fetchReservations()
             } else {
                 println("Error canceling reservation: ${result.exceptionOrNull()?.message}")
             }

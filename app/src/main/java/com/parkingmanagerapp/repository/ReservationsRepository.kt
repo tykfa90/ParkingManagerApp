@@ -85,21 +85,20 @@ class ReservationsRepository @Inject constructor(
         return (start1 <= end2 && end1 >= start2)
     }
 
-    // Removes the specified reservation from the system using OCC
+    // Removes the specified reservation from the system
     suspend fun deleteReservation(reservationID: String): Result<Boolean> = try {
         val documentRef = reservationsCollection.document(reservationID)
 
-        firestore.runTransaction { transaction ->
-            val snapshot = transaction.get(documentRef)
-            if (snapshot.exists()) {
-                // If the document has not changed, proceed to delete
-                transaction.delete(documentRef)
-            } else {
-                throw Exception("Reservation already deleted or modified")
-            }
-        }.await()
-
-        Result.success(true)
+        // Check if the reservation exists
+        val snapshot = documentRef.get().await()
+        if (snapshot.exists()) {
+            // If the document exists, proceed with deletion
+            documentRef.delete().await()
+            Result.success(true)
+        } else {
+            // Document does not exist
+            Result.failure(Exception("Reservation already deleted or modified"))
+        }
     } catch (e: Exception) {
         Result.failure(e)
     }

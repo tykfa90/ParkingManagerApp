@@ -17,6 +17,7 @@ import java.util.Locale
 @Composable
 fun ReservationItem(
     reservation: Reservation,
+    slotLabel: String,
     onCancelClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -27,7 +28,7 @@ fun ReservationItem(
             .fillMaxWidth()
             .padding(8.dp)
     ) {
-        Text(text = "Parking Slot: ${reservation.parkingSlotID}")
+        Text(text = "Parking Slot: $slotLabel")
         Text(text = "Start Date: ${dateFormat.format(reservation.reservationStart)}")
         Text(text = "End Date: ${dateFormat.format(reservation.reservationEnd)}")
         Text(text = "License Plate: ${reservation.licensePlate}")
