@@ -1,6 +1,7 @@
 package com.parkingmanagerapp.repository
 
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.SetOptions
 import com.parkingmanagerapp.model.Reservation
 import kotlinx.coroutines.tasks.await
 import java.util.Date
@@ -32,26 +33,37 @@ class ReservationsRepository @Inject constructor(
         Result.failure(e)
     }
 
-    // Adds a new reservation after performing an overlap check
+    // Adds a new reservation using optimistic concurrency control
     suspend fun addReservation(reservation: Reservation): Result<Boolean> = try {
-        // Check for overlapping reservations before starting a transaction
+        // Perform the overlap check before starting the transaction
         val hasOverlap = checkForOverlap(reservation)
 
         if (hasOverlap) {
-            Result.success(false) // Indicate that the slot is already reserved
+            Result.success(false) // The slot is already reserved
         } else {
-            // Proceed with the transaction to add the reservation
-            firestore.runTransaction { transaction ->
+            // Retrieve a snapshot of the reservations to check for concurrency issues
+            val snapshot = reservationsCollection
+                .whereEqualTo("parkingSlotID", reservation.parkingSlotID)
+                .whereEqualTo("reservationStart", reservation.reservationStart)
+                .get()
+                .await()
+
+            if (snapshot.isEmpty) {
+                // No conflicting reservation, proceed to add the reservation
                 val newReservationRef = reservationsCollection.document()
-                transaction.set(newReservationRef, reservation)
-            }.await()
-            Result.success(true) // Reservation successfully added
+
+                // Set reservation with a merge option to handle partial data update
+                newReservationRef.set(reservation, SetOptions.merge()).await()
+                Result.success(true)
+            } else {
+                // Conflict detected, another reservation was made
+                Result.success(false)
+            }
         }
     } catch (e: Exception) {
         Result.failure(e)
     }
 
-    // Helper function to verify whether there is no overlap existing when creating a new reservation
     private suspend fun checkForOverlap(reservation: Reservation): Boolean {
         val existingReservations = reservationsCollection
             .whereEqualTo("parkingSlotID", reservation.parkingSlotID)
@@ -69,14 +81,24 @@ class ReservationsRepository @Inject constructor(
         }
     }
 
-    // Helper function to check if two date ranges overlap
     private fun isOverlapping(start1: Date, end1: Date, start2: Date, end2: Date): Boolean {
         return (start1 <= end2 && end1 >= start2)
     }
 
-    // Removes the specified reservation from the system
+    // Removes the specified reservation from the system using OCC
     suspend fun deleteReservation(reservationID: String): Result<Boolean> = try {
-        reservationsCollection.document(reservationID).delete().await()
+        val documentRef = reservationsCollection.document(reservationID)
+
+        firestore.runTransaction { transaction ->
+            val snapshot = transaction.get(documentRef)
+            if (snapshot.exists()) {
+                // If the document has not changed, proceed to delete
+                transaction.delete(documentRef)
+            } else {
+                throw Exception("Reservation already deleted or modified")
+            }
+        }.await()
+
         Result.success(true)
     } catch (e: Exception) {
         Result.failure(e)
