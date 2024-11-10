@@ -1,5 +1,6 @@
 package com.parkingmanagerapp.viewModel
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.parkingmanagerapp.model.ParkingSlot
@@ -40,7 +41,8 @@ class ReservationViewModel @Inject constructor(
             if (result.isSuccess) {
                 val slots = result.getOrNull() ?: emptyList()
                 _parkingSlots.value = slots
-                _parkingSlotLabels.value = slots.associate { it.parkingSlotID to it.parkingSlotLabel }
+                _parkingSlotLabels.value =
+                    slots.associate { it.parkingSlotID to it.parkingSlotLabel }
             } else {
                 // Log the error or handle it
                 println("Error fetching parking slots: ${result.exceptionOrNull()?.message}")
@@ -64,7 +66,8 @@ class ReservationViewModel @Inject constructor(
         viewModelScope.launch {
             val result = reservationRepository.getUserReservations(userID)
             if (result.isSuccess) {
-                _userReservations.value = result.getOrNull()?.sortedBy { it.reservationStart } ?: emptyList()
+                _userReservations.value =
+                    result.getOrNull()?.sortedBy { it.reservationStart } ?: emptyList()
             } else {
                 // Log the error or handle it
                 println("Error fetching user reservations: ${result.exceptionOrNull()?.message}")
@@ -111,17 +114,24 @@ class ReservationViewModel @Inject constructor(
     }
 
     fun cancelReservation(reservationID: String) {
+        Log.d("ReservationViewModel", "Attempting to cancel reservation with ID: $reservationID")
         viewModelScope.launch {
-            // Fetch latest reservations before deletion to ensure consistency
-            fetchReservations()
-
-            // Proceed with deletion
-            val result = reservationRepository.deleteReservation(reservationID)
-            if (result.isSuccess) {
-                // Refresh reservations on success to reflect the current state
-                fetchReservations()
-            } else {
-                println("Error canceling reservation: ${result.exceptionOrNull()?.message}")
+            try {
+                val result = reservationRepository.deleteReservation(reservationID)
+                if (result.isSuccess) {
+                    Log.d(
+                        "ReservationViewModel",
+                        "Reservation canceled successfully for ID: $reservationID"
+                    )
+                    fetchReservations()
+                } else {
+                    Log.e(
+                        "ReservationViewModel",
+                        "Failed to cancel reservation. Reason: ${result.exceptionOrNull()?.message}"
+                    )
+                }
+            } catch (e: Exception) {
+                Log.e("ReservationViewModel", "Unexpected error during cancellation: ${e.message}")
             }
         }
     }

@@ -22,8 +22,6 @@ import com.parkingmanagerapp.view.regUserPanel.reservationSystem.ReservationCanc
 import com.parkingmanagerapp.view.regUserPanel.reservationSystem.ReservationItem
 import com.parkingmanagerapp.viewModel.AuthViewModel
 import com.parkingmanagerapp.viewModel.ReservationViewModel
-import java.text.SimpleDateFormat
-import java.util.Locale
 
 @Composable
 fun MyReservationsScreen(
@@ -37,14 +35,7 @@ fun MyReservationsScreen(
     val parkingSlotLabels by reservationViewModel.parkingSlotLabels.collectAsState()
     var selectedReservation by remember { mutableStateOf<Reservation?>(null) }
     var showDialog by remember { mutableStateOf(false) }
-    SimpleDateFormat("dd.MM.yy", Locale.getDefault())
 
-    // Fetch user reservations when the user changes
-    LaunchedEffect(user) {
-        user?.uid?.let { reservationViewModel.fetchUserReservations(it) }
-    }
-
-    // Fetch user reservations on user change
     LaunchedEffect(user) {
         user?.uid?.let { reservationViewModel.fetchUserReservations(it) }
     }
@@ -61,7 +52,6 @@ fun MyReservationsScreen(
             ) {
                 userReservations.forEach { reservation ->
                     val slotLabel = parkingSlotLabels[reservation.parkingSlotID] ?: "Unknown"
-
                     ReservationItem(
                         reservation = reservation,
                         slotLabel = slotLabel,
@@ -80,12 +70,12 @@ fun MyReservationsScreen(
                     slotLabel = parkingSlotLabels[reservation.parkingSlotID] ?: "Unknown",
                     onCancel = {
                         reservationViewModel.cancelReservation(reservation.reservationID)
-                        showDialog = false
-                        selectedReservation = null // Clear selected reservation to avoid stale state
                     },
                     onDismiss = {
                         showDialog = false
-                        selectedReservation = null // Clear selected reservation to avoid stale state
+                    },
+                    onComplete = {
+                        showDialog = false
                     }
                 )
             }
