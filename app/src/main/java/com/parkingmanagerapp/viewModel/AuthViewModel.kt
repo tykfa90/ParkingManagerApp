@@ -12,6 +12,7 @@ import com.parkingmanagerapp.model.User
 import com.parkingmanagerapp.model.UserRole
 import com.parkingmanagerapp.repository.UserRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
@@ -111,7 +112,8 @@ class AuthViewModel @Inject constructor(
                 surname = surname,
                 email = email,
                 phoneNumber = phoneNumber,
-                role = UserRole.REGULAR // Defaults all new accounts to REGULAR type account
+                role = UserRole.REGULAR, // Defaults all new accounts to REGULAR type account
+                active = true // New user accounts are active by default
             )
 
             val success = userRepository.registerNewUser(newUser, password)
@@ -153,14 +155,57 @@ class AuthViewModel @Inject constructor(
         _snackbarMessage.value = message
     }
 
-    // Disables the user account within the system, without deleting the user data
+    // Disables the user account within the system without deleting the user data
     fun deactivateUser(userId: String) {
         viewModelScope.launch {
             if (userRepository.disableUser(userId)) {
+                delay(100) // Adjustable delay to allow Firestore data to get updated
                 fetchAllUsers()
-                _snackbarMessage.value = "User disable successfully."
+                _snackbarMessage.value = "User disabled successfully."
             } else {
                 _snackbarMessage.value = "Failed to disable user."
+            }
+        }
+    }
+
+    // Enables the user account within the system
+    fun activateUser(userId: String) {
+        viewModelScope.launch {
+            if (userRepository.enableUser(userId)) {
+                delay(100) // Adjustable delay to allow Firestore data to get updated
+                fetchAllUsers()
+                _snackbarMessage.value = "User enabled successfully."
+            } else {
+                _snackbarMessage.value = "Failed to enable user."
+            }
+        }
+    }
+
+    // Update functions for email, password, phone number, and name omitted for brevity
+    // Updates the user's first name in both the local state and Firestore
+    fun updateUserName(newName: String) {
+        viewModelScope.launch {
+            val currentUser = userRepository.getCurrentUser() ?: return@launch
+            val updatedUser = currentUser.copy(name = newName)
+            if (userRepository.updateUserFirstName(updatedUser)) {
+                fetchAllUsers()
+                _snackbarMessage.value = "Name updated successfully."
+            } else {
+                _snackbarMessage.value = "Failed to update name."
+            }
+        }
+    }
+
+    // Updates the user's surname in both the local state and Firestore
+    fun updateUserSurname(newSurname: String) {
+        viewModelScope.launch {
+            val currentUser = userRepository.getCurrentUser() ?: return@launch
+            val updatedUser = currentUser.copy(surname = newSurname)
+            if (userRepository.updateUserSurname(updatedUser)) {
+                fetchAllUsers()
+                _snackbarMessage.value = "Surname updated successfully."
+            } else {
+                _snackbarMessage.value = "Failed to update surname."
             }
         }
     }
@@ -273,31 +318,5 @@ class AuthViewModel @Inject constructor(
 
     fun setUseTestPhoneNumber(useTest: Boolean) {
         _useTestPhoneNumber.value = useTest
-    }
-
-    fun updateUserName(newName: String) {
-        viewModelScope.launch {
-            val currentUser = userRepository.getCurrentUser() ?: return@launch
-            val updatedUser = currentUser.copy(name = newName)
-            if (userRepository.updateUserFirstName(updatedUser)) {
-                fetchAllUsers()
-                _snackbarMessage.value = "Name updated successfully."
-            } else {
-                _snackbarMessage.value = "Failed to update name."
-            }
-        }
-    }
-
-    fun updateUserSurname(newSurname: String) {
-        viewModelScope.launch {
-            val currentUser = userRepository.getCurrentUser() ?: return@launch
-            val updatedUser = currentUser.copy(surname = newSurname)
-            if (userRepository.updateUserFirstName(updatedUser)) {
-                fetchAllUsers()
-                _snackbarMessage.value = "Surname updated successfully."
-            } else {
-                _snackbarMessage.value = "Failed to update surname."
-            }
-        }
     }
 }

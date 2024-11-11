@@ -36,7 +36,7 @@ fun AdminUserAccountScreen(
 ) {
     val users by viewModel.users.collectAsState()
     var selectedUser by remember { mutableStateOf<User?>(null) }
-    var showDeleteDialog by remember { mutableStateOf(false) }
+    var showDisableDialog by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
         viewModel.fetchAllUsers()
@@ -69,23 +69,27 @@ fun AdminUserAccountScreen(
                 items(users) { user ->
                     UserItem(
                         user = user,
-                        onDelete = {
+                        onDisableOrEnable = {
                             selectedUser = user
-                            showDeleteDialog = true
+                            showDisableDialog = true
                         }
                     )
                 }
             }
         }
 
-        // Delete Confirmation Dialog
-        if (showDeleteDialog && selectedUser != null) {
-            DeleteUserConfirmationDialog(
+        // Disable Confirmation Dialog
+        if (showDisableDialog && selectedUser != null) {
+            DisableUserConfirmationDialog(
                 user = selectedUser!!,
-                onDismiss = { showDeleteDialog = false },
+                onDismiss = { showDisableDialog = false },
                 onConfirm = {
-                    viewModel.deactivateUser(selectedUser!!.uid)
-                    showDeleteDialog = false
+                    if (selectedUser!!.active) {
+                        viewModel.deactivateUser(selectedUser!!.uid)
+                    } else {
+                        viewModel.activateUser(selectedUser!!.uid)
+                    }
+                    showDisableDialog = false
                 }
             )
         }

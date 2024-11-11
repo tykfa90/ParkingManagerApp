@@ -8,5 +8,5 @@ data class User(
 
     var surname: String = "", // Stored in Firestore
     var role: UserRole = UserRole.REGULAR, // Stored in Firestore
-    val active: Boolean = true // Flag to handle user's ability to access the account
+    val active: Boolean // Flag to handle user's ability to access the account
 )

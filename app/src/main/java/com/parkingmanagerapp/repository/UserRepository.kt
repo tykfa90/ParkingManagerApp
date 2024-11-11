@@ -115,7 +115,8 @@ class UserRepository @Inject constructor(
                 surname = docSnapshot.getString("surname") ?: "",
                 phoneNumber = docSnapshot.getString("phoneNumber") ?: "",
                 email = docSnapshot.getString("email") ?: firebaseUser.email ?: "",
-                role = UserRole.valueOf(docSnapshot.getString("role") ?: "REGULAR")
+                role = UserRole.valueOf(docSnapshot.getString("role") ?: "REGULAR"),
+                active = docSnapshot.getBoolean("active") ?: true
             )
         } catch (e: Exception) {
             Log.e("UserRepository", "Error fetching user data: ${e.localizedMessage}")
@@ -258,7 +259,8 @@ class UserRepository @Inject constructor(
                     surname = doc.getString("surname") ?: "",
                     phoneNumber = doc.getString("phoneNumber") ?: "",
                     email = doc.getString("email") ?: "",
-                    role = UserRole.valueOf(doc.getString("role") ?: "REGULAR")
+                    role = UserRole.valueOf(doc.getString("role") ?: "REGULAR"),
+                    active = doc.getBoolean("active") ?: true // Map the "active" property correctly
                 )
             }
         } catch (e: Exception) {
