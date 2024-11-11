@@ -40,8 +40,6 @@ fun ParkingSlotScreen(
                         onButtonClick = {
                             if (isAdmin) {
                                 onEdit(item)
-                            } else {
-
                             }
                         },
                         modifier = modifier

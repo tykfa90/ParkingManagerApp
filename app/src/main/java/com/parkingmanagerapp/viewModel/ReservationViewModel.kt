@@ -30,6 +30,9 @@ class ReservationViewModel @Inject constructor(
     private val _parkingSlotLabels = MutableStateFlow<Map<String, String>>(emptyMap())
     val parkingSlotLabels: StateFlow<Map<String, String>> = _parkingSlotLabels
 
+    private val _reservationAdded = MutableStateFlow<Boolean?>(null)
+    val reservationAdded: StateFlow<Boolean?> = _reservationAdded
+
     init {
         fetchParkingSlots()
         fetchReservations()
@@ -101,16 +104,23 @@ class ReservationViewModel @Inject constructor(
             viewModelScope.launch {
                 val result = reservationRepository.addReservation(reservation)
                 if (result.isSuccess) {
+                    _reservationAdded.value = true
                     // Refresh reservations to ensure consistency
                     fetchReservations()
                 } else {
+                    _reservationAdded.value = false
                     println("Error creating reservation: ${result.exceptionOrNull()?.message}")
                 }
             }
+
             true
         } else {
             false
         }
+    }
+
+    fun clearReservationAddedStatus() {
+        _reservationAdded.value = null
     }
 
     fun cancelReservation(reservationID: String) {

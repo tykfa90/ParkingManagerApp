@@ -57,17 +57,25 @@ fun ReservationConfirmationDialog(
             confirmButton = {
                 Button(
                     onClick = {
-                        val reservation = Reservation(
-                            reservationID = UUID.randomUUID().toString(),
-                            parkingSlotID = parkingSlotID,
-                            userID = userID,
-                            licensePlate = licensePlate,
-                            reservationStart = startDate,
-                            reservationEnd = endDate
-                        )
-                        viewModel.createReservation(reservation)
-                        showDialog = false
-                        navController.popBackStack()
+                        if (licensePlate.isNotBlank()) {
+                            val reservation = Reservation(
+                                reservationID = UUID.randomUUID().toString(),
+                                parkingSlotID = parkingSlotID,
+                                userID = userID,
+                                licensePlate = licensePlate,
+                                reservationStart = startDate,
+                                reservationEnd = endDate
+                            )
+                            viewModel.createReservation(reservation)
+                            showDialog = false
+
+                            // Navigate back to ReservationScreen after confirming reservation
+                            navController.navigate("reservation") {
+                                popUpTo("reservation") { inclusive = true }
+                            }
+                        } else {
+                            // You can add a snackbar or error message here if the license plate is empty
+                        }
                     },
                     modifier = Modifier.fillMaxWidth()
                 ) {

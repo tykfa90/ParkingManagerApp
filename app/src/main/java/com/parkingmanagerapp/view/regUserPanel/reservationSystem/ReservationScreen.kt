@@ -56,6 +56,22 @@ fun ReservationScreen(
     val parkingSlots by parkingSlotViewModel.parkingSlots.collectAsState()
     val filteredSlots by reservationViewModel.parkingSlots.collectAsState()
     val user by authViewModel.user.collectAsState()
+    val reservationAdded by reservationViewModel.reservationAdded.collectAsState()
+
+    // Observe reservationAdded status to handle successful addition
+    LaunchedEffect(reservationAdded) {
+        if (reservationAdded == true) {
+            navController.navigate("reservation_screen") {
+                popUpTo("reservation_screen") { inclusive = true }
+            }
+            reservationViewModel.clearReservationAddedStatus() // Reset status after navigation
+        } else if (reservationAdded == false) {
+            coroutineScope.launch {
+                snackbarHostState.showSnackbar("Failed to add reservation. Please try again.")
+            }
+            reservationViewModel.clearReservationAddedStatus()
+        }
+    }
 
     LaunchedEffect(parkingSlots) {
         if (!searchPerformed) {
