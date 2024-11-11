@@ -84,7 +84,7 @@ fun AdminUserAccountScreen(
                 user = selectedUser!!,
                 onDismiss = { showDeleteDialog = false },
                 onConfirm = {
-                    viewModel.deleteUser(selectedUser!!.uid)
+                    viewModel.deactivateUser(selectedUser!!.uid)
                     showDeleteDialog = false
                 }
             )

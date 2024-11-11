@@ -90,10 +90,7 @@ class AuthViewModel @Inject constructor(
     // Registers a new user in the FirebaseAuth database. After generating uid,
     // passes over the newUser account with additional data to the Firebase Firestore
     fun registerWithEmailAndPassword(
-        firstName: String,
-        surname: String,
-        email: String,
-        phoneNumber: String,
+        firstName: String, surname: String, email: String, phoneNumber: String,
         password: String,
         confirmPassword: String
     ) {
@@ -156,14 +153,14 @@ class AuthViewModel @Inject constructor(
         _snackbarMessage.value = message
     }
 
-    // Deletes the user account
-    fun deleteUser(userId: String) {
+    // Disables the user account within the system, without deleting the user data
+    fun deactivateUser(userId: String) {
         viewModelScope.launch {
-            if (userRepository.deleteUser(userId)) {
+            if (userRepository.disableUser(userId)) {
                 fetchAllUsers()
-                _snackbarMessage.value = "User deleted successfully."
+                _snackbarMessage.value = "User disable successfully."
             } else {
-                _snackbarMessage.value = "Failed to delete user."
+                _snackbarMessage.value = "Failed to disable user."
             }
         }
     }
@@ -179,9 +176,11 @@ class AuthViewModel @Inject constructor(
                     // Send verification email to the new email address
                     currentUser.verifyBeforeUpdateEmail(newEmail).addOnCompleteListener { task ->
                         if (task.isSuccessful) {
-                            _snackbarMessage.value = "Verification email sent. Please check your new email."
+                            _snackbarMessage.value =
+                                "Verification email sent. Please check your new email."
                         } else {
-                            _snackbarMessage.value = "Failed to send verification email: ${task.exception?.localizedMessage}"
+                            _snackbarMessage.value =
+                                "Failed to send verification email: ${task.exception?.localizedMessage}"
                         }
                     }
                 } else {
@@ -254,7 +253,10 @@ class AuthViewModel @Inject constructor(
                 _snackbarMessage.value = "Verification failed: ${e.localizedMessage}"
             }
 
-            override fun onCodeSent(verificationId: String, token: PhoneAuthProvider.ForceResendingToken) {
+            override fun onCodeSent(
+                verificationId: String,
+                token: PhoneAuthProvider.ForceResendingToken
+            ) {
                 _verificationId.value = verificationId
                 _snackbarMessage.value = "Verification code sent."
             }

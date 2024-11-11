@@ -21,19 +21,19 @@ class UserRepository @Inject constructor(
     private val ioDispatcher: CoroutineContext
 ) {
 
-    /**
-     * Signs-in the user using Firebase Auth service.
-     *
-     * @param email The email address of the user.
-     * @param password The password of the user.
-     * @return The user object if sign-in is successful, null otherwise.
-     */
     suspend fun signInUser(email: String, password: String): User? = withContext(ioDispatcher) {
         try {
             val result = auth.signInWithEmailAndPassword(email, password).await()
             val firebaseUser = result.user ?: return@withContext null
             val userId = firebaseUser.uid
             val docSnapshot = db.collection("users").document(userId).get().await()
+
+            // Check if the user is marked as inactive
+            if (docSnapshot.exists() && docSnapshot.getBoolean("active") == false) {
+                Log.w("UserRepository", "User account is disabled.")
+                return@withContext null
+            }
+
             val role = UserRole.valueOf(docSnapshot.getString("role") ?: "REGULAR")
             User(
                 uid = userId,
@@ -41,7 +41,8 @@ class UserRepository @Inject constructor(
                 surname = docSnapshot.getString("surname") ?: "",
                 phoneNumber = firebaseUser.phoneNumber ?: "",
                 email = firebaseUser.email ?: "",
-                role = role
+                role = role,
+                active = true // You can add this to the user object if needed
             )
         } catch (e: Exception) {
             Log.e("UserRepository", "Error while signing in user: ${e.localizedMessage}")
@@ -267,17 +268,36 @@ class UserRepository @Inject constructor(
     }
 
     /**
-     * Deletes a specified user account entirely from Firestore.
+     * Disables a user account in Firestore by setting the active field to false.
      *
-     * @param userId The user ID of the account to be deleted.
-     * @return True if the deletion is successful, false otherwise.
+     * @param userId The user ID of the account to be disabled.
+     * @return True if the update is successful, false otherwise.
      */
-    suspend fun deleteUser(userId: String): Boolean = withContext(ioDispatcher) {
+    suspend fun disableUser(userId: String): Boolean = withContext(ioDispatcher) {
         try {
-            db.collection("users").document(userId).delete().await()
+            // Set the active field to false in Firestore to disable the user
+            db.collection("users").document(userId).update("active", false).await()
+            Log.d("UserRepository", "User disabled successfully for ID: $userId")
             true
         } catch (e: Exception) {
-            Log.e("UserRepository", "Error while deleting user: ${e.localizedMessage}")
+            Log.e("UserRepository", "Error disabling user: ${e.localizedMessage}")
+            false
+        }
+    }
+
+    /**
+     * Enables a user account in Firestore by setting the active field to true.
+     *
+     * @param userId The user ID of the account to be enabled.
+     * @return True if the update is successful, false otherwise.
+     */
+    suspend fun enableUser(userId: String): Boolean = withContext(ioDispatcher) {
+        try {
+            db.collection("users").document(userId).update("active", true).await()
+            Log.d("UserRepository", "User enabled successfully for ID: $userId")
+            true
+        } catch (e: Exception) {
+            Log.e("UserRepository", "Error enabling user: ${e.localizedMessage}")
             false
         }
     }
