@@ -91,7 +91,22 @@ class ReservationsRepository @Inject constructor(
     suspend fun deleteReservation(reservationID: String): Result<Boolean> = withContext(ioDispatcher) {
         try {
             Log.d("ReservationsRepository", "Attempting to delete reservation with ID: $reservationID")
-            reservationsCollection.document(reservationID).delete().await()
+
+            // Query to find the document with matching reservationID
+            val querySnapshot = reservationsCollection
+                .whereEqualTo("reservationID", reservationID)
+                .get()
+                .await()
+
+            if (querySnapshot.isEmpty) {
+                Log.d("ReservationsRepository", "No reservation found with ID: $reservationID")
+                return@withContext Result.failure(Exception("Reservation not found"))
+            }
+
+            // Get the Firestore document ID and delete it
+            val firestoreDocID = querySnapshot.documents[0].id
+            reservationsCollection.document(firestoreDocID).delete().await()
+
             Log.d("ReservationsRepository", "Reservation deleted successfully for ID: $reservationID")
             Result.success(true)
         } catch (e: Exception) {
