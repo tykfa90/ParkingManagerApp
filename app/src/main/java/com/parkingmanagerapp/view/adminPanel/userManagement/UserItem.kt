@@ -15,7 +15,8 @@ import com.parkingmanagerapp.model.User
 @Composable
 fun UserItem(
     user: User,
-    onDisableOrEnable: () -> Unit
+    onDisableOrEnable: () -> Unit,
+    @Suppress("UNUSED_PARAMETER") modifier: Modifier = Modifier // Parameter is in fact used as a part of the user accounts list
 ) {
     Column(
         modifier = Modifier
