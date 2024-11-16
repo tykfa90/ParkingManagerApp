@@ -26,6 +26,7 @@ class ReservationViewModel @Inject constructor(
     private val _reservations = MutableStateFlow<List<Reservation>>(emptyList())
     private val _userReservations = MutableStateFlow<List<Reservation>>(emptyList())
     val userReservations: StateFlow<List<Reservation>> = _userReservations
+    val allReservations: StateFlow<List<Reservation>> = _reservations
 
     private val _parkingSlotLabels = MutableStateFlow<Map<String, String>>(emptyMap())
     val parkingSlotLabels: StateFlow<Map<String, String>> = _parkingSlotLabels
@@ -53,11 +54,13 @@ class ReservationViewModel @Inject constructor(
         }
     }
 
-    private fun fetchReservations() {
+    fun fetchReservations() {
         viewModelScope.launch {
             val result = reservationRepository.getAllReservations()
             if (result.isSuccess) {
                 _reservations.value = result.getOrNull() ?: emptyList()
+                // Refresh user reservations to reflect any changes
+                _userReservations.value = _reservations.value.filter { it.userID == _userReservations.value.firstOrNull()?.userID }
             } else {
                 // Log the error or handle it
                 println("Error fetching reservations: ${result.exceptionOrNull()?.message}")
@@ -107,6 +110,7 @@ class ReservationViewModel @Inject constructor(
                     _reservationAdded.value = true
                     // Refresh reservations to ensure consistency
                     fetchReservations()
+                    fetchUserReservations(reservation.userID)
                 } else {
                     _reservationAdded.value = false
                     println("Error creating reservation: ${result.exceptionOrNull()?.message}")
@@ -134,6 +138,7 @@ class ReservationViewModel @Inject constructor(
                         "Reservation canceled successfully for ID: $reservationID"
                     )
                     fetchReservations()
+                    _userReservations.value = _userReservations.value.filter { it.reservationID != reservationID }
                 } else {
                     Log.e(
                         "ReservationViewModel",

@@ -45,6 +45,15 @@ fun AdminPanelScreen(
             ) {
                 Text("Manage User Accounts")
             }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Button(
+                onClick = { navController.navigate(Screen.AdminMenuReservations.route) },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Manage Reservations")
+            }
         }
     }
 }

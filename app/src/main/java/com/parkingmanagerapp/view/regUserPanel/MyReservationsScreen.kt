@@ -1,9 +1,17 @@
 package com.parkingmanagerapp.view.regUserPanel
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material3.Icon
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -12,7 +20,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
@@ -45,12 +55,15 @@ fun MyReservationsScreen(
         snackbarHostState = snackbarHostState
     ) {
         Box(modifier = Modifier.fillMaxSize()) {
-            Column(
+            var isScrolledToEnd by remember { mutableStateOf(false) }
+
+            LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(16.dp)
+                    .padding(horizontal = 16.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                userReservations.forEach { reservation ->
+                items(userReservations) { reservation ->
                     val slotLabel = parkingSlotLabels[reservation.parkingSlotID] ?: "Unknown"
                     ReservationItem(
                         reservation = reservation,
@@ -63,6 +76,26 @@ fun MyReservationsScreen(
                 }
             }
 
+            // Scroll indicator to inform users they can scroll down/up
+            if (!isScrolledToEnd && userReservations.isNotEmpty()) {
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.BottomCenter)
+                        .padding(8.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.ArrowDropDown,
+                        contentDescription = "Scroll down for more",
+                        modifier = Modifier
+                            .size(32.dp)
+                            .background(Color.Gray, CircleShape)
+                            .padding(4.dp),
+                        tint = Color.White
+                    )
+                }
+            }
+
+            // Delete Confirmation Dialog
             if (showDialog && selectedReservation != null) {
                 val reservation = selectedReservation!!
                 ReservationCancellationDialog(

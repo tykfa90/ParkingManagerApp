@@ -8,6 +8,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.parkingmanagerapp.view.adminPanel.AdminPanelScreen
 import com.parkingmanagerapp.view.adminPanel.parkingSlotManagement.AdminParkingSlotScreen
+import com.parkingmanagerapp.view.adminPanel.reservationManagement.AdminReservationsScreen
 import com.parkingmanagerapp.view.adminPanel.userManagement.AdminUserAccountScreen
 import com.parkingmanagerapp.view.regUserPanel.MainMenuScreen
 import com.parkingmanagerapp.view.regUserPanel.MyReservationsScreen
@@ -62,6 +63,11 @@ fun AppNavHost(navController: NavHostController, snackbarHostState: SnackbarHost
         }
         composable(Screen.Reservation.route) {
             ReservationScreen(
+                navController, snackbarHostState = snackbarHostState
+            )
+        }
+        composable(Screen.AdminMenuReservations.route) {
+            AdminReservationsScreen(
                 navController, snackbarHostState = snackbarHostState
             )
         }
