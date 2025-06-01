@@ -15,6 +15,6 @@ plugins {
     id("org.jetbrains.kotlin.android") version "1.9.23" apply false // Do not upgrade further
     id("com.google.gms.google-services") version "4.4.2" apply false
     id("com.google.dagger.hilt.android") version "2.52" apply false
-    id("com.google.devtools.ksp") version "1.9.23-1.0.19" apply false // Do not upgrade futher
+    id("com.google.devtools.ksp") version "1.9.23-1.0.19" apply false // Do not upgrade further
     id("de.mannodermaus.android-junit5") version "1.10.0.0" apply false
 }
