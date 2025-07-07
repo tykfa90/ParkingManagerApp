@@ -35,7 +35,7 @@ fun SplashScreen(navController: NavController, authViewModel: AuthViewModel) {
                 launchSingleTop = true
             }
 
-            false -> navController.navigate("signIn") {
+            false -> navController.navigate("sign_in") {
                 popUpTo("splash") { inclusive = true }
                 launchSingleTop = true
             }

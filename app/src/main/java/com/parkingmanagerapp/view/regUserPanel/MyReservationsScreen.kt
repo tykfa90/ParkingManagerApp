@@ -65,7 +65,7 @@ fun MyReservationsScreen(
             // Sort reservations by start date
             val sortedReservations = userReservations.sortedBy { it.reservationStart }
 
-            // Added LazyColumn for scrollable user list with indicator arrows for better usability
+            // Added LazyColumn for scrollable list with indicator arrows for better usability
             LazyColumn(
                 contentPadding = PaddingValues(bottom = 48.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
