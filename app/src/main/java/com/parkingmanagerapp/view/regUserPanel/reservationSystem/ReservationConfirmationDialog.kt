@@ -19,6 +19,7 @@ import com.parkingmanagerapp.model.Reservation
 import com.parkingmanagerapp.viewModel.ReservationViewModel
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
+import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 import java.util.UUID
@@ -71,12 +72,29 @@ fun ReservationConfirmationDialog(
                                 reservationStart = startDate,
                                 reservationEnd = endDate
                             )
-                            viewModel.createReservation(reservation)
-                            showDialog = false
+                            viewModel.createReservation(reservation) {
+                                val calendar = Calendar.getInstance()
+                                calendar.time = startDate
+                                calendar.set(Calendar.HOUR_OF_DAY, 0)
+                                calendar.set(Calendar.MINUTE, 0)
+                                calendar.set(Calendar.SECOND, 0)
+                                calendar.set(Calendar.MILLISECOND, 0)
+                                val start = calendar.time
 
-                            // Navigate back to ReservationScreen after confirming reservation
-                            navController.navigate("reservation") {
-                                popUpTo("reservation") { inclusive = true }
+                                calendar.time = endDate
+                                calendar.set(Calendar.HOUR_OF_DAY, 23)
+                                calendar.set(Calendar.MINUTE, 59)
+                                calendar.set(Calendar.SECOND, 59)
+                                calendar.set(Calendar.MILLISECOND, 999)
+                                val end = calendar.time
+
+                                viewModel.filterAvailableSlots(
+                                    start,
+                                    end,
+                                    viewModel.parkingSlots.value
+                                )
+
+                                showDialog = false
                             }
                         } else {
                             coroutineScope.launch {

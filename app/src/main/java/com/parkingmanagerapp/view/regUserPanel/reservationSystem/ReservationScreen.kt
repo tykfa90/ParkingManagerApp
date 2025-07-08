@@ -74,10 +74,28 @@ fun ReservationScreen(
     // Observe reservationAdded status to handle successful addition
     LaunchedEffect(reservationAdded) {
         if (reservationAdded == true) {
-            navController.navigate("reservation_screen") {
-                popUpTo("reservation_screen") { inclusive = true }
+            val calendar = Calendar.getInstance()
+            calendar.time = startDate
+            calendar.set(Calendar.HOUR_OF_DAY, 0)
+            calendar.set(Calendar.MINUTE, 0)
+            calendar.set(Calendar.SECOND, 0)
+            calendar.set(Calendar.MILLISECOND, 0)
+            val start = calendar.time
+
+            calendar.time = endDate
+            calendar.set(Calendar.HOUR_OF_DAY, 23)
+            calendar.set(Calendar.MINUTE, 59)
+            calendar.set(Calendar.SECOND, 59)
+            calendar.set(Calendar.MILLISECOND, 999)
+            val end = calendar.time
+
+            reservationViewModel.filterAvailableSlots(start, end, parkingSlots)
+
+            reservationViewModel.clearReservationAddedStatus()
+
+            navController.navigate("reservation") {
+                popUpTo("reservation") { inclusive = true }
             }
-            reservationViewModel.clearReservationAddedStatus() // Reset status after navigation
         } else if (reservationAdded == false) {
             coroutineScope.launch {
                 snackbarHostState.showSnackbar("Failed to add reservation. Please try again.")

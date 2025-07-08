@@ -111,7 +111,7 @@ class ReservationViewModel @Inject constructor(
         _parkingSlots.value = availableSlots
     }
 
-    fun createReservation(reservation: Reservation): Boolean {
+    fun createReservation(reservation: Reservation, onComplete: () -> Unit = {}): Any {
         val overlappingReservation = _reservations.value.any { res ->
             res.parkingSlotID == reservation.parkingSlotID &&
                     ((reservation.reservationStart in res.reservationStart..res.reservationEnd) ||
@@ -128,6 +128,7 @@ class ReservationViewModel @Inject constructor(
                     // Refresh reservations to ensure consistency
                     fetchReservations()
                     fetchUserReservations(reservation.userID)
+                    onComplete.invoke()
                 } else {
                     _reservationAdded.value = false
                     println("Error creating reservation: ${result.exceptionOrNull()?.message}")
@@ -135,7 +136,7 @@ class ReservationViewModel @Inject constructor(
             }
             true
         } else {
-            false
+            _reservationAdded.value = false
         }
     }
 
