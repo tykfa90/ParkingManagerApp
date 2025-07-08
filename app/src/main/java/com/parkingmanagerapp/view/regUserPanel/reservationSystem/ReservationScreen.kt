@@ -87,23 +87,23 @@ fun ReservationScreen(
         }
     }
 
-    LaunchedEffect(parkingSlots) {
-        if (!searchPerformed) {
-            val calendar = Calendar.getInstance()
-            calendar.time = startDate
-            calendar.set(Calendar.HOUR_OF_DAY, 0)
-            calendar.set(Calendar.MINUTE, 0)
-            calendar.set(Calendar.SECOND, 0)
-            calendar.set(Calendar.MILLISECOND, 0)
-            val start = calendar.time
+    LaunchedEffect(startDate, endDate, parkingSlots) {
+        val calendar = Calendar.getInstance()
+        calendar.time = startDate
+        calendar.set(Calendar.HOUR_OF_DAY, 0)
+        calendar.set(Calendar.MINUTE, 0)
+        calendar.set(Calendar.SECOND, 0)
+        calendar.set(Calendar.MILLISECOND, 0)
+        val start = calendar.time
 
-            calendar.time = endDate
-            calendar.set(Calendar.HOUR_OF_DAY, 23)
-            calendar.set(Calendar.MINUTE, 59)
-            calendar.set(Calendar.SECOND, 59)
-            calendar.set(Calendar.MILLISECOND, 999)
-            val end = calendar.time
+        calendar.time = endDate
+        calendar.set(Calendar.HOUR_OF_DAY, 23)
+        calendar.set(Calendar.MINUTE, 59)
+        calendar.set(Calendar.SECOND, 59)
+        calendar.set(Calendar.MILLISECOND, 999)
+        val end = calendar.time
 
+        if (!start.after(end)) {
             reservationViewModel.filterAvailableSlots(start, end, parkingSlots)
         }
     }
@@ -141,39 +141,6 @@ fun ReservationScreen(
                             SimpleDateFormat("dd-MM-yyyy", Locale.getDefault()).format(endDate)
                         }"
                     )
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Button(
-                    onClick = {
-                        val calendar = Calendar.getInstance()
-                        calendar.time = startDate
-                        calendar.set(Calendar.HOUR_OF_DAY, 0)
-                        calendar.set(Calendar.MINUTE, 0)
-                        calendar.set(Calendar.SECOND, 0)
-                        calendar.set(Calendar.MILLISECOND, 0)
-                        val start = calendar.time
-
-                        calendar.time = endDate
-                        calendar.set(Calendar.HOUR_OF_DAY, 23)
-                        calendar.set(Calendar.MINUTE, 59)
-                        calendar.set(Calendar.SECOND, 59)
-                        calendar.set(Calendar.MILLISECOND, 999)
-                        val end = calendar.time
-
-                        if (start.after(end)) {
-                            coroutineScope.launch {
-                                snackbarHostState.showSnackbar("Start date cannot be after end date.")
-                            }
-                        } else {
-                            searchPerformed = true
-                            reservationViewModel.filterAvailableSlots(start, end, parkingSlots)
-                        }
-                    },
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text("Search Available Slots")
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))

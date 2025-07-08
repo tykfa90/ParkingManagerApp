@@ -11,6 +11,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import java.util.Calendar
 import java.util.Date
 import javax.inject.Inject
 
@@ -82,6 +83,22 @@ class ReservationViewModel @Inject constructor(
     }
 
     fun filterAvailableSlots(startDate: Date, endDate: Date, slots: List<ParkingSlot>) {
+        val calendar = Calendar.getInstance()
+
+        calendar.time = startDate
+        calendar.set(Calendar.HOUR_OF_DAY, 0)
+        calendar.set(Calendar.MINUTE, 0)
+        calendar.set(Calendar.SECOND, 0)
+        calendar.set(Calendar.MILLISECOND, 0)
+        val start = calendar.time
+
+        calendar.time = endDate
+        calendar.set(Calendar.HOUR_OF_DAY, 23)
+        calendar.set(Calendar.MINUTE, 59)
+        calendar.set(Calendar.SECOND, 59)
+        calendar.set(Calendar.MILLISECOND, 999)
+        val end = calendar.time
+
         val availableSlots = slots.filter { slot ->
             _reservations.value.none { res ->
                 res.parkingSlotID == slot.parkingSlotID &&
