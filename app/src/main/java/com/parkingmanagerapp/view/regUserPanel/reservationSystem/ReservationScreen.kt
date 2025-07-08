@@ -276,7 +276,12 @@ fun ReservationScreen(
 
     DatePickerComposable(
         initialDate = startDate,
-        onDateSelected = { startDate = it },
+        onDateSelected = { selectedStart ->
+            startDate = selectedStart
+            if (endDate.before(selectedStart)) {
+                endDate = selectedStart
+            }
+        },
         showDialog = showStartDatePicker,
         onDismissRequest = { showStartDatePicker = false },
         minDate = Date()
@@ -284,7 +289,13 @@ fun ReservationScreen(
 
     DatePickerComposable(
         initialDate = endDate,
-        onDateSelected = { endDate = it },
+        onDateSelected = { selectedEnd ->
+            endDate = if (selectedEnd.before(startDate)) {
+                startDate
+            } else {
+                selectedEnd
+            }
+        },
         showDialog = showEndDatePicker,
         onDismissRequest = { showEndDatePicker = false },
         minDate = startDate

@@ -116,7 +116,6 @@ class ReservationViewModel @Inject constructor(
                     println("Error creating reservation: ${result.exceptionOrNull()?.message}")
                 }
             }
-
             true
         } else {
             false
