@@ -5,16 +5,19 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavController
 import com.parkingmanagerapp.model.Reservation
 import com.parkingmanagerapp.viewModel.ReservationViewModel
+import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -28,11 +31,13 @@ fun ReservationConfirmationDialog(
     userID: String,
     startDate: Date,
     endDate: Date,
-    viewModel: ReservationViewModel
+    viewModel: ReservationViewModel,
+    snackbarHostState: SnackbarHostState,
 ) {
     val dateFormat = SimpleDateFormat("dd-MM-yyyy", Locale.getDefault())
     var licensePlate by remember { mutableStateOf("") }
     var showDialog by remember { mutableStateOf(true) }
+    val coroutineScope = rememberCoroutineScope()
 
     if (showDialog) {
         AlertDialog(
@@ -74,7 +79,9 @@ fun ReservationConfirmationDialog(
                                 popUpTo("reservation") { inclusive = true }
                             }
                         } else {
-                            // You can add a snackbar or error message here if the license plate is empty
+                            coroutineScope.launch {
+                                snackbarHostState.showSnackbar("Please enter a license plate before confirming.")
+                            }
                         }
                     },
                     modifier = Modifier.fillMaxWidth()

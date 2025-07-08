@@ -63,7 +63,6 @@ fun ReservationScreen(
     var showEndDatePicker by remember { mutableStateOf(false) }
     var showDialog by remember { mutableStateOf(false) }
     var selectedSlot by remember { mutableStateOf<ParkingSlot?>(null) }
-    var searchPerformed by remember { mutableStateOf(false) }
 
     val coroutineScope = rememberCoroutineScope()
     val parkingSlots by parkingSlotViewModel.parkingSlots.collectAsState()
@@ -237,7 +236,8 @@ fun ReservationScreen(
             userID = user!!.uid,
             startDate = startDateAtMidnight,
             endDate = endDateAtMidnight,
-            viewModel = reservationViewModel
+            viewModel = reservationViewModel,
+            snackbarHostState = snackbarHostState
         )
     }
 
