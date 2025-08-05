@@ -3,6 +3,7 @@ package com.parkingmanagerapp
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -13,8 +14,10 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.rememberNavController
 import com.parkingmanagerapp.ui.theme.ParkingManagerAppTheme
 import com.parkingmanagerapp.utility.AppSurface
+import com.parkingmanagerapp.utility.NetworkMonitor
 import com.parkingmanagerapp.utility.Screen
 import com.parkingmanagerapp.viewModel.AuthViewModel
+import com.parkingmanagerapp.viewModel.NetworkViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -35,6 +38,19 @@ fun MainContent() {
     val authViewModel: AuthViewModel = hiltViewModel()
     val isUserAuthenticated by authViewModel.signInStatus.collectAsState(initial = null)
     val snackbarHostState = remember { SnackbarHostState() }
+    val networkMonitor: NetworkMonitor = hiltViewModel<NetworkViewModel>().networkMonitor
+    val isConnected by networkMonitor.isConnected.collectAsState()
+
+    LaunchedEffect(isConnected) {
+        if (!isConnected) {
+            snackbarHostState.showSnackbar(
+                message = "Internet connection unavailable. Changes will not be saved across the online services.",
+                duration = SnackbarDuration.Indefinite
+            )
+        } else {
+            snackbarHostState.currentSnackbarData?.dismiss()
+        }
+    }
 
     LaunchedEffect(isUserAuthenticated) {
         when (isUserAuthenticated) {

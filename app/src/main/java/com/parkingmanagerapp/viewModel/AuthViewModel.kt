@@ -11,9 +11,11 @@ import com.google.firebase.auth.PhoneAuthProvider
 import com.parkingmanagerapp.model.User
 import com.parkingmanagerapp.model.UserRole
 import com.parkingmanagerapp.repository.UserRepository
+import com.parkingmanagerapp.utility.NetworkMonitor
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
@@ -22,9 +24,11 @@ import javax.inject.Inject
 @HiltViewModel
 class AuthViewModel @Inject constructor(
     private val userRepository: UserRepository,
-    private val auth: FirebaseAuth
+    private val auth: FirebaseAuth,
+    networkMonitor: NetworkMonitor
 ) : ViewModel() {
 
+    val isConnected: StateFlow<Boolean> = networkMonitor.isConnected
     private val _signInStatus = MutableStateFlow<Boolean?>(null)
     val signInStatus = _signInStatus.asStateFlow()
 

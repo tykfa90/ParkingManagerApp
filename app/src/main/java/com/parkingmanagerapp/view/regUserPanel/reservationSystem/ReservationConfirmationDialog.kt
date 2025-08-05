@@ -19,7 +19,6 @@ import com.parkingmanagerapp.model.Reservation
 import com.parkingmanagerapp.viewModel.ReservationViewModel
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
-import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 import java.util.UUID
@@ -33,16 +32,20 @@ fun ReservationConfirmationDialog(
     startDate: Date,
     endDate: Date,
     viewModel: ReservationViewModel,
-    snackbarHostState: SnackbarHostState,
+    snackbarHostState: SnackbarHostState
 ) {
     val dateFormat = SimpleDateFormat("dd-MM-yyyy", Locale.getDefault())
     var licensePlate by remember { mutableStateOf("") }
     var showDialog by remember { mutableStateOf(true) }
+    var showError by remember { mutableStateOf(false) }
     val coroutineScope = rememberCoroutineScope()
 
     if (showDialog) {
         AlertDialog(
-            onDismissRequest = { showDialog = false },
+            onDismissRequest = {
+                showDialog = false
+                navController.popBackStack()
+            },
             title = { Text("Confirm Reservation") },
             text = {
                 Column {
@@ -52,8 +55,13 @@ fun ReservationConfirmationDialog(
                     OutlinedTextField(
                         value = licensePlate,
                         onValueChange = {
-                            licensePlate =
-                                it.uppercase(Locale.getDefault()).replace("[^A-Z0-9]".toRegex(), "")
+                            licensePlate = it.uppercase(Locale.getDefault())
+                                .replace("[^A-Z0-9]".toRegex(), "")
+                            showError = false
+                        },
+                        isError = showError,
+                        supportingText = {
+                            if (showError) Text("License plate must be at least 4 characters.")
                         },
                         label = { Text("License Plate") },
                         modifier = Modifier.fillMaxWidth()
@@ -63,44 +71,25 @@ fun ReservationConfirmationDialog(
             confirmButton = {
                 Button(
                     onClick = {
-                        if (licensePlate.isNotBlank()) {
-                            val reservation = Reservation(
-                                reservationID = UUID.randomUUID().toString(),
-                                parkingSlotID = parkingSlotID,
-                                userID = userID,
-                                licensePlate = licensePlate,
-                                reservationStart = startDate,
-                                reservationEnd = endDate
-                            )
-                            viewModel.createReservation(reservation) {
-                                val calendar = Calendar.getInstance()
-                                calendar.time = startDate
-                                calendar.set(Calendar.HOUR_OF_DAY, 0)
-                                calendar.set(Calendar.MINUTE, 0)
-                                calendar.set(Calendar.SECOND, 0)
-                                calendar.set(Calendar.MILLISECOND, 0)
-                                val start = calendar.time
-
-                                calendar.time = endDate
-                                calendar.set(Calendar.HOUR_OF_DAY, 23)
-                                calendar.set(Calendar.MINUTE, 59)
-                                calendar.set(Calendar.SECOND, 59)
-                                calendar.set(Calendar.MILLISECOND, 999)
-                                val end = calendar.time
-
-                                viewModel.filterAvailableSlots(
-                                    start,
-                                    end,
-                                    viewModel.parkingSlots.value
-                                )
-
-                                showDialog = false
-                            }
-                        } else {
+                        if (licensePlate.isBlank() || licensePlate.length < 4) {
+                            showError = true
                             coroutineScope.launch {
-                                snackbarHostState.showSnackbar("Please enter a license plate before confirming.")
+                                snackbarHostState.showSnackbar("Please enter a valid license plate (min. 4 characters).")
                             }
+                            return@Button
                         }
+
+                        val reservation = Reservation(
+                            reservationID = UUID.randomUUID().toString(),
+                            parkingSlotID = parkingSlotID,
+                            userID = userID,
+                            licensePlate = licensePlate,
+                            reservationStart = startDate,
+                            reservationEnd = endDate
+                        )
+
+                        viewModel.createReservation(reservation)
+                        showDialog = false
                     },
                     modifier = Modifier.fillMaxWidth()
                 ) {

@@ -19,6 +19,7 @@ import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarHostState
@@ -70,9 +71,20 @@ fun ReservationScreen(
     val user by authViewModel.user.collectAsState()
     val reservationAdded by reservationViewModel.reservationAdded.collectAsState()
     var isScrolledToEnd by remember { mutableStateOf(false) }
+    val allReservations by reservationViewModel.allReservations.collectAsState()
+    val isLoading = filteredSlots.isEmpty()
+
+    // Refreshes the available parking slot list each time the screen is opened
+    LaunchedEffect(Unit) {
+        reservationViewModel.fetchReservations()
+    }
 
     // Observe reservationAdded status to handle successful addition
     LaunchedEffect(reservationAdded) {
+        coroutineScope.launch {
+            snackbarHostState.showSnackbar("Reservation created successfully.")
+        }
+
         if (reservationAdded == true) {
             val calendar = Calendar.getInstance()
             calendar.time = startDate
@@ -104,7 +116,7 @@ fun ReservationScreen(
         }
     }
 
-    LaunchedEffect(startDate, endDate, parkingSlots) {
+    LaunchedEffect(startDate, endDate, parkingSlots, allReservations) {
         val calendar = Calendar.getInstance()
         calendar.time = startDate
         calendar.set(Calendar.HOUR_OF_DAY, 0)
@@ -162,127 +174,129 @@ fun ReservationScreen(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                Box(modifier = Modifier.fillMaxSize()) {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     // Sort parking slots by label alphabetically
-                    val sortedAvailableSlots = filteredSlots.sortedBy { it.parkingSlotLabel }
+                    if (isLoading) {
+                        CircularProgressIndicator()
+                    } else {
+                        val sortedAvailableSlots = filteredSlots.sortedBy { it.parkingSlotLabel }
 
-                    LazyColumn(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(horizontal = 16.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp),
-                        contentPadding = PaddingValues(bottom = 48.dp)
-                    ) {
-                        items(sortedAvailableSlots) { parkingSlot ->
-                            Card(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .shadow(2.dp, shape = MaterialTheme.shapes.medium),
-                                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
-                            ) {
-                                Column(
+                        LazyColumn(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(horizontal = 16.dp),
+                            verticalArrangement = Arrangement.spacedBy(8.dp),
+                            contentPadding = PaddingValues(bottom = 48.dp)
+                        ) {
+                            items(sortedAvailableSlots) { parkingSlot ->
+                                Card(
                                     modifier = Modifier
-                                        .padding(16.dp)
                                         .fillMaxWidth()
+                                        .shadow(2.dp, shape = MaterialTheme.shapes.medium),
+                                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
                                 ) {
-                                    Text(text = "Parking Slot: ${parkingSlot.parkingSlotLabel}")
-
-                                    Spacer(modifier = Modifier.height(8.dp))
-
-                                    Button(
-                                        onClick = {
-                                            selectedSlot = parkingSlot
-                                            showDialog = true
-                                        },
-                                        modifier = Modifier.fillMaxWidth()
+                                    Column(
+                                        modifier = Modifier
+                                            .padding(16.dp)
+                                            .fillMaxWidth()
                                     ) {
-                                        Text("Reserve")
+                                        Text(text = "Parking Slot: ${parkingSlot.parkingSlotLabel}")
+
+                                        Spacer(modifier = Modifier.height(8.dp))
+
+                                        Button(
+                                            onClick = {
+                                                selectedSlot = parkingSlot
+                                                showDialog = true
+                                            },
+                                            modifier = Modifier.fillMaxWidth()
+                                        ) {
+                                            Text("Reserve")
+                                        }
                                     }
                                 }
                             }
+
+                            // Set isScrolledToEnd to true if there are more items beyond visible space
+                            isScrolledToEnd = sortedAvailableSlots.size <= 3
                         }
-
-                        // Set isScrolledToEnd to true if there are more items beyond visible space
-                        isScrolledToEnd = sortedAvailableSlots.size <= 3
-                    }
-
-                    // Scroll indicator to inform admins they can scroll down/up
-                    if (!isScrolledToEnd && sortedAvailableSlots.isNotEmpty()) {
-                        Box(
-                            modifier = Modifier
-                                .align(Alignment.BottomCenter)
-                                .padding(8.dp)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.ArrowDropDown,
-                                contentDescription = "Scroll down for more",
+                        // Scroll indicator to inform admins they can scroll down/up
+                        if (!isScrolledToEnd && sortedAvailableSlots.isNotEmpty()) {
+                            Box(
                                 modifier = Modifier
-                                    .size(32.dp)
-                                    .background(Color.Gray, CircleShape)
-                                    .padding(4.dp),
-                                tint = Color.White
-                            )
+                                    .align(Alignment.BottomCenter)
+                                    .padding(8.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.ArrowDropDown,
+                                    contentDescription = "Scroll down for more",
+                                    modifier = Modifier
+                                        .size(32.dp)
+                                        .background(Color.Gray, CircleShape)
+                                        .padding(4.dp),
+                                    tint = Color.White
+                                )
+                            }
                         }
                     }
                 }
-
             }
         }
-    }
 
-    if (showDialog && selectedSlot != null && user != null) {
-        val calendar = Calendar.getInstance()
+        if (showDialog && selectedSlot != null && user != null) {
+            val calendar = Calendar.getInstance()
 
-        calendar.time = startDate
-        calendar.set(Calendar.HOUR_OF_DAY, 0)
-        calendar.set(Calendar.MINUTE, 0)
-        calendar.set(Calendar.SECOND, 0)
-        calendar.set(Calendar.MILLISECOND, 0)
-        val startDateAtMidnight = calendar.time
+            calendar.time = startDate
+            calendar.set(Calendar.HOUR_OF_DAY, 0)
+            calendar.set(Calendar.MINUTE, 0)
+            calendar.set(Calendar.SECOND, 0)
+            calendar.set(Calendar.MILLISECOND, 0)
+            val startDateAtMidnight = calendar.time
 
-        calendar.time = endDate
-        calendar.set(Calendar.HOUR_OF_DAY, 23)
-        calendar.set(Calendar.MINUTE, 59)
-        calendar.set(Calendar.SECOND, 59)
-        calendar.set(Calendar.MILLISECOND, 999)
-        val endDateAtMidnight = calendar.time
+            calendar.time = endDate
+            calendar.set(Calendar.HOUR_OF_DAY, 23)
+            calendar.set(Calendar.MINUTE, 59)
+            calendar.set(Calendar.SECOND, 59)
+            calendar.set(Calendar.MILLISECOND, 999)
+            val endDateAtMidnight = calendar.time
 
-        ReservationConfirmationDialog(
-            navController = navController,
-            parkingSlotID = selectedSlot!!.parkingSlotID,  // Pass the ID for storage
-            parkingSlotLabel = selectedSlot!!.parkingSlotLabel,  // Pass the label for display
-            userID = user!!.uid,
-            startDate = startDateAtMidnight,
-            endDate = endDateAtMidnight,
-            viewModel = reservationViewModel,
-            snackbarHostState = snackbarHostState
+            ReservationConfirmationDialog(
+                navController = navController,
+                parkingSlotID = selectedSlot!!.parkingSlotID,  // Pass the ID for storage
+                parkingSlotLabel = selectedSlot!!.parkingSlotLabel,  // Pass the label for display
+                userID = user!!.uid,
+                startDate = startDateAtMidnight,
+                endDate = endDateAtMidnight,
+                viewModel = reservationViewModel,
+                snackbarHostState = snackbarHostState
+            )
+        }
+
+        DatePickerComposable(
+            initialDate = startDate,
+            onDateSelected = { selectedStart ->
+                startDate = selectedStart
+                if (endDate.before(selectedStart)) {
+                    endDate = selectedStart
+                }
+            },
+            showDialog = showStartDatePicker,
+            onDismissRequest = { showStartDatePicker = false },
+            minDate = Date()
+        )
+
+        DatePickerComposable(
+            initialDate = endDate,
+            onDateSelected = { selectedEnd ->
+                endDate = if (selectedEnd.before(startDate)) {
+                    startDate
+                } else {
+                    selectedEnd
+                }
+            },
+            showDialog = showEndDatePicker,
+            onDismissRequest = { showEndDatePicker = false },
+            minDate = startDate
         )
     }
-
-    DatePickerComposable(
-        initialDate = startDate,
-        onDateSelected = { selectedStart ->
-            startDate = selectedStart
-            if (endDate.before(selectedStart)) {
-                endDate = selectedStart
-            }
-        },
-        showDialog = showStartDatePicker,
-        onDismissRequest = { showStartDatePicker = false },
-        minDate = Date()
-    )
-
-    DatePickerComposable(
-        initialDate = endDate,
-        onDateSelected = { selectedEnd ->
-            endDate = if (selectedEnd.before(startDate)) {
-                startDate
-            } else {
-                selectedEnd
-            }
-        },
-        showDialog = showEndDatePicker,
-        onDismissRequest = { showEndDatePicker = false },
-        minDate = startDate
-    )
 }

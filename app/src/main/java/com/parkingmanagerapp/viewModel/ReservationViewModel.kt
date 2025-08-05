@@ -49,21 +49,21 @@ class ReservationViewModel @Inject constructor(
                 _parkingSlotLabels.value =
                     slots.associate { it.parkingSlotID to it.parkingSlotLabel }
             } else {
-                // Log the error or handle it
                 println("Error fetching parking slots: ${result.exceptionOrNull()?.message}")
             }
         }
     }
 
-    fun fetchReservations() {
+    fun fetchReservations(onComplete: () -> Unit = {}) {
         viewModelScope.launch {
             val result = reservationRepository.getAllReservations()
             if (result.isSuccess) {
                 _reservations.value = result.getOrNull() ?: emptyList()
                 // Refresh user reservations to reflect any changes
-                _userReservations.value = _reservations.value.filter { it.userID == _userReservations.value.firstOrNull()?.userID }
+                _userReservations.value =
+                    _reservations.value.filter { it.userID == _userReservations.value.firstOrNull()?.userID }
+                onComplete()
             } else {
-                // Log the error or handle it
                 println("Error fetching reservations: ${result.exceptionOrNull()?.message}")
             }
         }
@@ -76,7 +76,6 @@ class ReservationViewModel @Inject constructor(
                 _userReservations.value =
                     result.getOrNull()?.sortedBy { it.reservationStart } ?: emptyList()
             } else {
-                // Log the error or handle it
                 println("Error fetching user reservations: ${result.exceptionOrNull()?.message}")
             }
         }
@@ -101,11 +100,11 @@ class ReservationViewModel @Inject constructor(
 
         val availableSlots = slots.filter { slot ->
             _reservations.value.none { res ->
-                res.parkingSlotID == slot.parkingSlotID &&
-                        ((startDate in res.reservationStart..res.reservationEnd) ||
-                                (endDate in res.reservationStart..res.reservationEnd) ||
-                                (res.reservationStart in startDate..endDate) ||
-                                (res.reservationEnd in startDate..endDate))
+                res.parkingSlotID == slot.parkingSlotID && (
+                        (start in res.reservationStart..res.reservationEnd) ||
+                                (end in res.reservationStart..res.reservationEnd) ||
+                                (res.reservationStart in start..end) ||
+                                (res.reservationEnd in start..end))
             }
         }
         _parkingSlots.value = availableSlots
@@ -126,9 +125,9 @@ class ReservationViewModel @Inject constructor(
                 if (result.isSuccess) {
                     _reservationAdded.value = true
                     // Refresh reservations to ensure consistency
-                    fetchReservations()
-                    fetchUserReservations(reservation.userID)
-                    onComplete.invoke()
+                    fetchReservations{
+                        onComplete()
+                    }
                 } else {
                     _reservationAdded.value = false
                     println("Error creating reservation: ${result.exceptionOrNull()?.message}")
@@ -155,7 +154,8 @@ class ReservationViewModel @Inject constructor(
                         "Reservation canceled successfully for ID: $reservationID"
                     )
                     fetchReservations()
-                    _userReservations.value = _userReservations.value.filter { it.reservationID != reservationID }
+                    _userReservations.value =
+                        _userReservations.value.filter { it.reservationID != reservationID }
                 } else {
                     Log.e(
                         "ReservationViewModel",

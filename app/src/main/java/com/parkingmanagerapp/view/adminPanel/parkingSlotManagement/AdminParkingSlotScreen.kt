@@ -18,7 +18,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FloatingActionButton
@@ -105,8 +104,7 @@ fun AdminParkingSlotScreen(
                                     selectedSlot = parkingSlot
                                     showDeleteDialog = true
                                 },
-                                modifier = Modifier.fillMaxWidth(),
-                                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.onError)
+                                modifier = Modifier.fillMaxWidth()
                             ) {
                                 Text("Delete")
                             }
