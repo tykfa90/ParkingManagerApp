@@ -7,6 +7,7 @@ import com.parkingmanagerapp.model.ParkingSlot
 import com.parkingmanagerapp.model.Reservation
 import com.parkingmanagerapp.repository.ParkingSlotRepository
 import com.parkingmanagerapp.repository.ReservationsRepository
+import com.parkingmanagerapp.utility.NetworkMonitor
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -18,7 +19,8 @@ import javax.inject.Inject
 @HiltViewModel
 class ReservationViewModel @Inject constructor(
     private val reservationRepository: ReservationsRepository,
-    private val parkingSlotRepository: ParkingSlotRepository
+    private val parkingSlotRepository: ParkingSlotRepository,
+    private val networkMonitor: NetworkMonitor
 ) : ViewModel() {
 
     private val _parkingSlots = MutableStateFlow<List<ParkingSlot>>(emptyList())
@@ -59,7 +61,6 @@ class ReservationViewModel @Inject constructor(
             val result = reservationRepository.getAllReservations()
             if (result.isSuccess) {
                 _reservations.value = result.getOrNull() ?: emptyList()
-                // Refresh user reservations to reflect any changes
                 _userReservations.value =
                     _reservations.value.filter { it.userID == _userReservations.value.firstOrNull()?.userID }
                 onComplete()
@@ -83,7 +84,6 @@ class ReservationViewModel @Inject constructor(
 
     fun filterAvailableSlots(startDate: Date, endDate: Date, slots: List<ParkingSlot>) {
         val calendar = Calendar.getInstance()
-
         calendar.time = startDate
         calendar.set(Calendar.HOUR_OF_DAY, 0)
         calendar.set(Calendar.MINUTE, 0)
@@ -104,39 +104,33 @@ class ReservationViewModel @Inject constructor(
                         (start in res.reservationStart..res.reservationEnd) ||
                                 (end in res.reservationStart..res.reservationEnd) ||
                                 (res.reservationStart in start..end) ||
-                                (res.reservationEnd in start..end))
+                                (res.reservationEnd in start..end)
+                        )
             }
         }
         _parkingSlots.value = availableSlots
     }
 
     fun createReservation(reservation: Reservation, onComplete: () -> Unit = {}): Any {
-        val overlappingReservation = _reservations.value.any { res ->
-            res.parkingSlotID == reservation.parkingSlotID &&
-                    ((reservation.reservationStart in res.reservationStart..res.reservationEnd) ||
-                            (reservation.reservationEnd in res.reservationStart..res.reservationEnd) ||
-                            (res.reservationStart in reservation.reservationStart..reservation.reservationEnd) ||
-                            (res.reservationEnd in reservation.reservationStart..reservation.reservationEnd))
-        }
-
-        return if (!overlappingReservation) {
-            viewModelScope.launch {
-                val result = reservationRepository.addReservation(reservation)
-                if (result.isSuccess) {
-                    _reservationAdded.value = true
-                    // Refresh reservations to ensure consistency
-                    fetchReservations{
-                        onComplete()
-                    }
-                } else {
-                    _reservationAdded.value = false
-                    println("Error creating reservation: ${result.exceptionOrNull()?.message}")
-                }
+        viewModelScope.launch {
+            if (!networkMonitor.isConnected.value) {
+                _reservationAdded.value = false
+                println("Internet connection unavailable. Reservation not added.")
+                return@launch
             }
-            true
-        } else {
-            _reservationAdded.value = false
+
+            val result = reservationRepository.addReservation(reservation)
+            if (result.isSuccess && result.getOrDefault(false)) {
+                _reservationAdded.value = true
+                fetchReservations {
+                    onComplete()
+                }
+            } else {
+                _reservationAdded.value = false
+                println("Error creating reservation: ${result.exceptionOrNull()?.message}")
+            }
         }
+        return true
     }
 
     fun clearReservationAddedStatus() {

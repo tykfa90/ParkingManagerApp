@@ -41,6 +41,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.parkingmanagerapp.model.ParkingSlot
 import com.parkingmanagerapp.ui.theme.StandardScreenLayout
+import com.parkingmanagerapp.utility.NetworkMonitor
 import com.parkingmanagerapp.viewModel.AuthViewModel
 import com.parkingmanagerapp.viewModel.ParkingSlotViewModel
 import com.parkingmanagerapp.viewModel.ReservationViewModel
@@ -56,7 +57,8 @@ fun ReservationScreen(
     reservationViewModel: ReservationViewModel = hiltViewModel(),
     parkingSlotViewModel: ParkingSlotViewModel = hiltViewModel(),
     authViewModel: AuthViewModel = hiltViewModel(),
-    snackbarHostState: SnackbarHostState
+    snackbarHostState: SnackbarHostState,
+    networkMonitor: NetworkMonitor
 ) {
     var startDate by remember { mutableStateOf(Date()) }
     var endDate by remember { mutableStateOf(Date()) }
@@ -64,6 +66,7 @@ fun ReservationScreen(
     var showEndDatePicker by remember { mutableStateOf(false) }
     var showDialog by remember { mutableStateOf(false) }
     var selectedSlot by remember { mutableStateOf<ParkingSlot?>(null) }
+    val isConnected by networkMonitor.isConnected.collectAsState()
 
     val coroutineScope = rememberCoroutineScope()
     val parkingSlots by parkingSlotViewModel.parkingSlots.collectAsState()
@@ -206,8 +209,14 @@ fun ReservationScreen(
 
                                         Button(
                                             onClick = {
-                                                selectedSlot = parkingSlot
-                                                showDialog = true
+                                                if (!isConnected) {
+                                                    coroutineScope.launch {
+                                                        snackbarHostState.showSnackbar("No internet connection - reservation cannot be added.")
+                                                    }
+                                                } else {
+                                                    selectedSlot = parkingSlot
+                                                    showDialog = true
+                                                }
                                             },
                                             modifier = Modifier.fillMaxWidth()
                                         ) {
@@ -268,7 +277,8 @@ fun ReservationScreen(
                 startDate = startDateAtMidnight,
                 endDate = endDateAtMidnight,
                 viewModel = reservationViewModel,
-                snackbarHostState = snackbarHostState
+                snackbarHostState = snackbarHostState,
+                isConnected = isConnected
             )
         }
 
