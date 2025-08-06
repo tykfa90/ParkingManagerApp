@@ -78,5 +78,5 @@ fun MainContent() {
         }
     }
 
-    AppSurface(navController = navController, snackbarHostState = snackbarHostState)
+    AppSurface(navController = navController, snackbarHostState = snackbarHostState, networkMonitor = networkMonitor)
 }

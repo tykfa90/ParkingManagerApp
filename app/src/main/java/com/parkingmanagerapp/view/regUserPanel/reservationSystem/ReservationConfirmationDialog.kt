@@ -32,7 +32,9 @@ fun ReservationConfirmationDialog(
     startDate: Date,
     endDate: Date,
     viewModel: ReservationViewModel,
-    snackbarHostState: SnackbarHostState
+    snackbarHostState: SnackbarHostState,
+    isConnected: Boolean,
+    onDismissRequest: () -> Unit = {}
 ) {
     val dateFormat = SimpleDateFormat("dd-MM-yyyy", Locale.getDefault())
     var licensePlate by remember { mutableStateOf("") }
@@ -71,6 +73,13 @@ fun ReservationConfirmationDialog(
             confirmButton = {
                 Button(
                     onClick = {
+                        if (!isConnected) {
+                            coroutineScope.launch {
+                                snackbarHostState.showSnackbar("Internet connection unavailable - cannot create reservation.")
+                            }
+                            return@Button
+                        }
+
                         if (licensePlate.isBlank() || licensePlate.length < 4) {
                             showError = true
                             coroutineScope.launch {

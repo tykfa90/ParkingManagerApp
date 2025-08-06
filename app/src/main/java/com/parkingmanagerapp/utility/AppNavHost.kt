@@ -19,7 +19,11 @@ import com.parkingmanagerapp.view.regUserPanel.reservationSystem.ReservationScre
 import com.parkingmanagerapp.view.regUserPanel.userAccountManagement.UserProfileScreen
 
 @Composable
-fun AppNavHost(navController: NavHostController, snackbarHostState: SnackbarHostState) {
+fun AppNavHost(
+    navController: NavHostController,
+    snackbarHostState: SnackbarHostState,
+    networkMonitor: NetworkMonitor
+) {
     NavHost(navController = navController, startDestination = Screen.SplashScreen.route) {
         composable(Screen.SplashScreen.route) {
             SplashScreen(navController, authViewModel = hiltViewModel())
@@ -34,38 +38,29 @@ fun AppNavHost(navController: NavHostController, snackbarHostState: SnackbarHost
             MainMenuScreen(navController, snackbarHostState)
         }
         composable(Screen.UserProfile.route) {
-            UserProfileScreen(navController,
-                snackbarHostState = snackbarHostState
-            )
+            UserProfileScreen(navController, snackbarHostState = snackbarHostState)
         }
         composable(Screen.AdminMenu.route) {
-            AdminPanelScreen(
-                navController,
-                snackbarHostState = snackbarHostState
-            )
+            AdminPanelScreen(navController, snackbarHostState = snackbarHostState)
         }
         composable(Screen.AdminMenuUserAccounts.route) {
-            AdminUserAccountScreen(
-                navController, snackbarHostState = snackbarHostState
-            )
+            AdminUserAccountScreen(navController, snackbarHostState = snackbarHostState)
         }
         composable(Screen.AdminMenuParkingSlots.route) {
             AdminParkingSlotScreen(navController, snackbarHostState = snackbarHostState)
         }
         composable(Screen.MyReservations.route) {
-            MyReservationsScreen(
-                navController, snackbarHostState = snackbarHostState
-            )
+            MyReservationsScreen(navController, snackbarHostState = snackbarHostState)
         }
         composable(Screen.Reservation.route) {
             ReservationScreen(
-                navController, snackbarHostState = snackbarHostState
+                navController = navController,
+                snackbarHostState = snackbarHostState,
+                networkMonitor = networkMonitor
             )
         }
         composable(Screen.AdminMenuReservations.route) {
-            AdminReservationsScreen(
-                navController, snackbarHostState = snackbarHostState
-            )
+            AdminReservationsScreen(navController, snackbarHostState = snackbarHostState)
         }
     }
 }

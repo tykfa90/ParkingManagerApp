@@ -14,7 +14,11 @@ import androidx.navigation.NavHostController
 
 // Overlay element to hold entire application's scaffold and cross-screen elements display
 @Composable
-fun AppSurface(navController: NavHostController, snackbarHostState: SnackbarHostState) {
+fun AppSurface(
+    navController: NavHostController,
+    snackbarHostState: SnackbarHostState,
+    networkMonitor: NetworkMonitor
+) {
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = MaterialTheme.colorScheme.background
@@ -23,7 +27,11 @@ fun AppSurface(navController: NavHostController, snackbarHostState: SnackbarHost
             snackbarHost = { SnackbarHost(snackbarHostState) }
         ) { contentPadding ->
             Box(modifier = Modifier.padding(contentPadding)) {
-                AppNavHost(navController = navController, snackbarHostState = snackbarHostState)
+                AppNavHost(
+                    navController = navController,
+                    snackbarHostState = snackbarHostState,
+                    networkMonitor = networkMonitor
+                )
             }
         }
     }
