@@ -11,6 +11,7 @@ import com.parkingmanagerapp.utility.NetworkMonitor
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import java.util.Calendar
 import java.util.Date
@@ -24,18 +25,18 @@ class ReservationViewModel @Inject constructor(
 ) : ViewModel() {
 
     private val _parkingSlots = MutableStateFlow<List<ParkingSlot>>(emptyList())
-    val parkingSlots: StateFlow<List<ParkingSlot>> = _parkingSlots
+    val parkingSlots: StateFlow<List<ParkingSlot>> = _parkingSlots.asStateFlow()
 
     private val _reservations = MutableStateFlow<List<Reservation>>(emptyList())
     private val _userReservations = MutableStateFlow<List<Reservation>>(emptyList())
-    val userReservations: StateFlow<List<Reservation>> = _userReservations
-    val allReservations: StateFlow<List<Reservation>> = _reservations
+    val userReservations: StateFlow<List<Reservation>> = _userReservations.asStateFlow()
+    val allReservations: StateFlow<List<Reservation>> = _reservations.asStateFlow()
 
     private val _parkingSlotLabels = MutableStateFlow<Map<String, String>>(emptyMap())
-    val parkingSlotLabels: StateFlow<Map<String, String>> = _parkingSlotLabels
+    val parkingSlotLabels: StateFlow<Map<String, String>> = _parkingSlotLabels.asStateFlow()
 
     private val _reservationAdded = MutableStateFlow<Boolean?>(null)
-    val reservationAdded: StateFlow<Boolean?> = _reservationAdded
+    val reservationAdded: StateFlow<Boolean?> = _reservationAdded.asStateFlow()
 
     init {
         fetchParkingSlots()
@@ -82,7 +83,7 @@ class ReservationViewModel @Inject constructor(
         }
     }
 
-    fun filterAvailableSlots(startDate: Date, endDate: Date, slots: List<ParkingSlot>) {
+    internal fun filterAvailableSlots(startDate: Date, endDate: Date, slots: List<ParkingSlot>) {
         val calendar = Calendar.getInstance()
         calendar.time = startDate
         calendar.set(Calendar.HOUR_OF_DAY, 0)

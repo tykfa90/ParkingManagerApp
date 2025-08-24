@@ -67,16 +67,6 @@ class AuthViewModel @Inject constructor(
         }
     }
 
-    // Sorts users by name
-    fun sortUsersByFirstName() {
-        _users.value = _users.value.sortedBy { it.name }
-    }
-
-    // Sorts users by surname
-    fun sortUsersBySurname() {
-        _users.value = _users.value.sortedBy { it.surname }
-    }
-
     // Signs in the user, using the basic e-mail + password method
     fun signIn(email: String, password: String) {
         viewModelScope.launch {
@@ -153,10 +143,6 @@ class AuthViewModel @Inject constructor(
 
     fun clearSnackbarMessage() {
         _snackbarMessage.value = null
-    }
-
-    fun setSnackbarMessage(message: String) {
-        _snackbarMessage.value = message
     }
 
     // Disables the user account within the system without deleting the user data
@@ -274,7 +260,8 @@ class AuthViewModel @Inject constructor(
         }
     }
 
-    fun verifyPhoneNumber(verificationId: String, code: String, activity: Activity) {
+    //Experimental - for future updates.
+    internal fun verifyPhoneNumber(verificationId: String, code: String, activity: Activity) {
         val credential = PhoneAuthProvider.getCredential(verificationId, code)
         viewModelScope.launch {
             try {

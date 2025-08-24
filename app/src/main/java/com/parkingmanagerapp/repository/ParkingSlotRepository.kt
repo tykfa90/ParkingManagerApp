@@ -40,7 +40,7 @@ class ParkingSlotRepository @Inject constructor(
     }
 
     // Updates the selected parking spot
-    suspend fun updateParkingSlot(slotID: String, updatedSlot: ParkingSlot): Result<Unit> {
+    internal suspend fun updateParkingSlot(slotID: String, updatedSlot: ParkingSlot): Result<Unit> {
         return try {
             parkingSlotCollection.document(slotID)
                 .set(updatedSlot).await()

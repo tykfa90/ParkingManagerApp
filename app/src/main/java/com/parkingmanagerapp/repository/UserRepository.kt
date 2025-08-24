@@ -20,13 +20,22 @@ class UserRepository @Inject constructor(
     private val db: FirebaseFirestore,
     private val ioDispatcher: CoroutineContext
 ) {
+    private val usersCollection = db.collection("users")
+    private fun userDoc(uid: String) = usersCollection.document(uid)
 
+    /**
+     * Signs in a user with the provided email and password.
+     *
+     * @param email The user's email address.
+     * @param password The user's password.
+     * @return The user object if successful, null otherwise.
+     */
     suspend fun signInUser(email: String, password: String): User? = withContext(ioDispatcher) {
         try {
             val result = auth.signInWithEmailAndPassword(email, password).await()
             val firebaseUser = result.user ?: return@withContext null
             val userId = firebaseUser.uid
-            val docSnapshot = db.collection("users").document(userId).get().await()
+            val docSnapshot = userDoc(userId).get().await()
 
             // Check if the user is marked as inactive
             if (docSnapshot.exists() && docSnapshot.getBoolean("active") == false) {
@@ -70,7 +79,7 @@ class UserRepository @Inject constructor(
             val newUser = user.copy(uid = firebaseUser.uid)
 
             // Save additional attributes to Firestore
-            db.collection("users").document(newUser.uid).set(newUser.toMap()).await()
+            userDoc(newUser.uid).set(newUser.toMap()).await()
             true
         } catch (e: Exception) {
             Log.e("UserRepository", "Error while registering new user: ${e.localizedMessage}")
@@ -108,7 +117,7 @@ class UserRepository @Inject constructor(
     suspend fun getCurrentUser(): User? = withContext(ioDispatcher) {
         val firebaseUser = auth.currentUser ?: return@withContext null
         try {
-            val docSnapshot = db.collection("users").document(firebaseUser.uid).get().await()
+            val docSnapshot = userDoc(firebaseUser.uid).get().await()
             User(
                 uid = firebaseUser.uid,
                 name = docSnapshot.getString("name") ?: firebaseUser.displayName ?: "",
@@ -133,7 +142,7 @@ class UserRepository @Inject constructor(
     suspend fun updateUserFirstName(user: User): Boolean = withContext(ioDispatcher) {
         try {
             // Update Firestore
-            db.collection("users").document(user.uid).update("name", user.name).await()
+            userDoc(user.uid).update("name", user.name).await()
 
             // Update Firebase Auth display name
             val profileUpdates = userProfileChangeRequest {
@@ -155,7 +164,7 @@ class UserRepository @Inject constructor(
      */
     suspend fun updateUserSurname(user: User): Boolean = withContext(ioDispatcher) {
         try {
-            db.collection("users").document(user.uid).update("surname", user.surname).await()
+            userDoc(user.uid).update("surname", user.surname).await()
             true
         } catch (e: Exception) {
             Log.e("UserRepository", "Error updating user surname: ${e.localizedMessage}")
@@ -193,7 +202,7 @@ class UserRepository @Inject constructor(
         try {
             val user = auth.currentUser ?: return@withContext false
             user.updateEmail(newEmail).await()
-            db.collection("users").document(user.uid).update("email", newEmail).await()
+            userDoc(user.uid).update("email", newEmail).await()
             true
         } catch (e: Exception) {
             Log.e("UserRepository", "Error updating email: ${e.localizedMessage}")
@@ -227,15 +236,13 @@ class UserRepository @Inject constructor(
      * @return True if the update is successful, false otherwise.
      */
     suspend fun updateUserPhoneNumber(
-        newPhoneNumber: String,
-        verificationId: String,
-        code: String
+        newPhoneNumber: String, verificationId: String, code: String
     ): Boolean = withContext(ioDispatcher) {
         try {
             val user = auth.currentUser ?: return@withContext false
             val credential = PhoneAuthProvider.getCredential(verificationId, code)
             user.updatePhoneNumber(credential).await()
-            db.collection("users").document(user.uid).update("phoneNumber", newPhoneNumber).await()
+            userDoc(user.uid).update("phoneNumber", newPhoneNumber).await()
             true
         } catch (e: Exception) {
             Log.e("UserRepository", "Error updating phone number: ${e.localizedMessage}")
@@ -248,7 +255,7 @@ class UserRepository @Inject constructor(
      *
      * @return A list of all user objects.
      */
-    suspend fun getAllUsers(): List<User> = withContext(ioDispatcher) {
+    internal suspend fun getAllUsers(): List<User> = withContext(ioDispatcher) {
         try {
             val usersSnapshot = db.collection("users").get().await()
             usersSnapshot.documents.mapNotNull { doc ->
@@ -278,7 +285,7 @@ class UserRepository @Inject constructor(
     suspend fun disableUser(userId: String): Boolean = withContext(ioDispatcher) {
         try {
             // Set the active field to false in Firestore to disable the user
-            db.collection("users").document(userId).update("active", false).await()
+            userDoc(userId).update("active", false).await()
             Log.d("UserRepository", "User disabled successfully for ID: $userId")
             true
         } catch (e: Exception) {
@@ -295,7 +302,7 @@ class UserRepository @Inject constructor(
      */
     suspend fun enableUser(userId: String): Boolean = withContext(ioDispatcher) {
         try {
-            db.collection("users").document(userId).update("active", true).await()
+            userDoc(userId).update("active", true).await()
             Log.d("UserRepository", "User enabled successfully for ID: $userId")
             true
         } catch (e: Exception) {
