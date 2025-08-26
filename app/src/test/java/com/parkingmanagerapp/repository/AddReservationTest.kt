@@ -1,39 +1,30 @@
 package com.parkingmanagerapp.repository
 
 import com.google.android.gms.tasks.Tasks
-import com.google.firebase.firestore.CollectionReference
-import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.QuerySnapshot
 import com.google.firebase.firestore.Transaction
 import com.parkingmanagerapp.model.Reservation
-import io.mockk.coEvery
-import io.mockk.every
-import io.mockk.mockk
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.tasks.await
-import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.mockito.kotlin.any
+import org.mockito.kotlin.doReturn
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.whenever
 import java.util.Date
-import kotlin.coroutines.CoroutineContext
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 @OptIn(ExperimentalCoroutinesApi::class)
-class ReservationsRepositoryTest {
-
-    private lateinit var repository: ReservationsRepository
-    private lateinit var firestore: FirebaseFirestore
-    private lateinit var collection: CollectionReference
-    private val dispatcher: CoroutineContext = StandardTestDispatcher()
+class AddReservationTest : RepositoryTestBase() {
 
     @BeforeEach
-    fun setup() {
-        firestore = mockk()
-        collection = mockk()
-        every { firestore.collection("reservations") } returns collection
+    fun setUp() {
+        firestore = mock()
+        collection = mock()
+        whenever(firestore.collection("reservations")).thenReturn(collection)
         repository = ReservationsRepository(firestore, dispatcher)
     }
 
@@ -48,22 +39,21 @@ class ReservationsRepositoryTest {
             reservationEnd = Date(2000000)
         )
 
-        val querySnapshot = mockk<QuerySnapshot> {
-            every { toObjects(Reservation::class.java) } returns emptyList()
+        val snapshot = mock<QuerySnapshot> {
+            on { toObjects(Reservation::class.java) } doReturn emptyList()
         }
 
-        coEvery {
-            collection.whereEqualTo("parkingSlotID", reservation.parkingSlotID).get().await()
-        } returns querySnapshot
-
-        coEvery {
-            firestore.runTransaction<Boolean>(any())
-        } coAnswers {
-            val block = arg<suspend (Transaction) -> Boolean>(0)
-            val transaction = mockk<Transaction>(relaxed = true)
-            val result = runBlocking { block(transaction) }
-            Tasks.forResult(result)
+        val query = mock<Query> {
+            on { get() } doReturn Tasks.forResult(snapshot)
         }
+
+        whenever(collection.whereEqualTo("parkingSlotID", "slot1")) doReturn query
+
+        whenever(firestore.runTransaction(any<Transaction.Function<Boolean>>()))
+            .thenAnswer { invocation ->
+                val function = invocation.getArgument<Transaction.Function<Boolean>>(0)
+                Tasks.forResult(function.apply(mock()))
+            }
 
         val result = repository.addReservation(reservation)
 
@@ -73,8 +63,8 @@ class ReservationsRepositoryTest {
 
     @Test
     fun `addReservation returns false when overlapping reservation exists`() = runTest(dispatcher) {
-        val existingReservation = Reservation(
-            reservationID = "res2",
+        val overlapping = Reservation(
+            reservationID = "existing",
             userID = "user2",
             parkingSlotID = "slot1",
             licensePlate = "ABC123",
@@ -91,24 +81,21 @@ class ReservationsRepositoryTest {
             reservationEnd = Date(2000000)
         )
 
-        val querySnapshot = mockk<QuerySnapshot> {
-            every { toObjects(Reservation::class.java) } returns listOf(existingReservation)
+        val snapshot = mock<QuerySnapshot> {
+            on { toObjects(Reservation::class.java) } doReturn listOf(overlapping)
         }
 
-        coEvery {
-            collection.whereEqualTo("parkingSlotID", newReservation.parkingSlotID).get().await()
-        } returns querySnapshot
+        val query = mock<Query> {
+            on { get() } doReturn Tasks.forResult(snapshot)
+        }
 
-        coEvery {
-            firestore.runTransaction<Boolean>(any())
-        } coAnswers {
-            val transactionBlock = arg<suspend (Transaction) -> Boolean>(0)
-            val transaction = mockk<Transaction>(relaxed = true)
-            val result = runBlocking {
-                transactionBlock(transaction)
+        whenever(collection.whereEqualTo("parkingSlotID", "slot1")) doReturn query
+
+        whenever(firestore.runTransaction(any<Transaction.Function<Boolean>>()))
+            .thenAnswer { invocation ->
+                val function = invocation.getArgument<Transaction.Function<Boolean>>(0)
+                Tasks.forResult(function.apply(mock()))
             }
-            Tasks.forResult(result)
-        }
 
         val result = repository.addReservation(newReservation)
 
@@ -127,9 +114,11 @@ class ReservationsRepositoryTest {
             reservationEnd = Date()
         )
 
-        coEvery {
-            collection.whereEqualTo("parkingSlotID", reservation.parkingSlotID).get().await()
-        } throws RuntimeException("Firestore error")
+        val query = mock<Query> {
+            on { get() } doReturn Tasks.forException(RuntimeException("Firestore error"))
+        }
+
+        whenever(collection.whereEqualTo("parkingSlotID", "slot1")) doReturn query
 
         val result = repository.addReservation(reservation)
 

@@ -113,10 +113,10 @@ dependencies {
 
     // Mocking
     testImplementation("io.mockk:mockk:1.14.5")
-
-    // Hilt
-    testImplementation("com.google.dagger:hilt-android-testing:2.57")
-    kspTest("com.google.dagger:hilt-compiler:2.57")
+    testImplementation("org.mockito:mockito-inline:5.2.0")
+    testImplementation("org.mockito.kotlin:mockito-kotlin:6.0.0")
+    testImplementation("org.junit.jupiter:junit-jupiter-api:5.13.4")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.13.4")
 
     // Debugging dependencies
     debugImplementation("androidx.compose.ui:ui-tooling")
@@ -125,4 +125,8 @@ dependencies {
 
 tasks.withType<Test>().configureEach {
     useJUnitPlatform()
+    jvmArgs(
+        "-XX:+EnableDynamicAgentLoading",
+        "-Dio.mockk.usePlatformClassLoader=true"
+    )
 }

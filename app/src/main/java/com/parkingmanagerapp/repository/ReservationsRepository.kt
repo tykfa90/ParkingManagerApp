@@ -3,9 +3,9 @@ package com.parkingmanagerapp.repository
 import android.util.Log
 import com.google.firebase.firestore.FirebaseFirestore
 import com.parkingmanagerapp.model.Reservation
+import com.parkingmanagerapp.utility.ReservationUtils.isOverlapping
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
-import java.util.Date
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.coroutines.CoroutineContext
@@ -84,11 +84,6 @@ class ReservationsRepository @Inject constructor(
                 Result.failure(e)
             }
         }
-
-    // Helper function to check for overlapping reservations
-    private fun isOverlapping(start1: Date, end1: Date, start2: Date, end2: Date): Boolean {
-        return (start1 <= end2 && end1 >= start2)
-    }
 
     // Removes the specified reservation from the system
     suspend fun deleteReservation(reservationID: String): Result<Boolean> =
